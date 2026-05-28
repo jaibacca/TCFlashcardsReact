@@ -1,0 +1,226 @@
+.drill-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.drill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.drill-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.score {
+  font-size: 18px;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  transition: width 0.3s ease;
+}
+
+.card-counter {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.flashcard {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-bottom: 20px;
+}
+
+.question-section {
+  text-align: center;
+  padding: 40px 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.hanzi-display {
+  font-size: 96px;
+  font-weight: bold;
+  color: #333;
+  font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+}
+
+.answer-section {
+  padding: 20px 0;
+}
+
+.input-group {
+  margin: 20px 0;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #555;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.option-btn {
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.option-btn:hover {
+  border-color: #4CAF50;
+  background: #f0f9f0;
+}
+
+.option-btn.selected {
+  border-color: #4CAF50;
+  background: #4CAF50;
+  color: white;
+}
+
+.check-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 20px;
+}
+
+.check-btn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.check-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.answer-reveal {
+  text-align: center;
+}
+
+.correct-answer {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.correct-answer h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.correct-answer p {
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+.result {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.result.correct {
+  background: #d4edda;
+  color: #155724;
+}
+
+.result.incorrect {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.metadata {
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.navigation-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.navigation-controls button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.navigation-controls button:hover:not(:disabled) {
+  border-color: #4CAF50;
+  background: #f0f9f0;
+}
+
+.navigation-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navigation-controls .restart-btn {
+  border-color: #ff9800;
+  color: #ff9800;
+}
+
+.navigation-controls .restart-btn:hover {
+  border-color: #ff9800;
+  background: #fff3e0;
+}

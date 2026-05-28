@@ -1,0 +1,162 @@
+.data-selector {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.selector-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.selector-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.selector-actions button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.select-btn:hover {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.deselect-btn:hover {
+  background: #f44336;
+  color: white;
+  border-color: #f44336;
+}
+
+.selected-count {
+  background: #f0f9ff;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  color: #2196F3;
+}
+
+.books-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.book-item {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.book-item:last-child {
+  border-bottom: none;
+}
+
+.book-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+  color: #666;
+  min-width: 25px;
+}
+
+.expand-btn:hover {
+  color: #333;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.checkbox-label:hover {
+  background: #f5f5f5;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.book-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.item-count {
+  color: #666;
+  font-size: 14px;
+  margin-left: auto;
+}
+
+.chapters-list {
+  margin-left: 40px;
+  margin-top: 8px;
+  padding-left: 15px;
+  border-left: 2px solid #e0e0e0;
+}
+
+.chapter-label {
+  display: flex;
+  padding: 6px;
+  margin-bottom: 5px;
+}
+
+.chapter-label span:first-of-type {
+  color: #555;
+}
+
+.books-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.books-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.books-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.books-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

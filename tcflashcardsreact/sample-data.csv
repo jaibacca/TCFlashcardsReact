@@ -1,0 +1,21 @@
+Hanzi,Pinyin,English,Book,Chapter,Order
+你好,nǐ hǎo,hello,Book 1,1,1
+謝謝,xiè xie,thank you,Book 1,1,2
+再見,zài jiàn,goodbye,Book 1,1,3
+我,wǒ,I/me,Book 1,2,1
+你,nǐ,you,Book 1,2,2
+他,tā,he/him,Book 1,2,3
+她,tā,she/her,Book 1,2,4
+好,hǎo,good,Book 1,3,1
+很,hěn,very,Book 1,3,2
+不,bù,not,Book 1,3,3
+是,shì,to be,Book 1,3,4
+的,de,possessive particle,Book 1,3,5
+人,rén,person,Book 2,1,1
+中國,zhōng guó,China,Book 2,1,2
+美國,měi guó,America/USA,Book 2,1,3
+學生,xué shēng,student,Book 2,2,1
+老師,lǎo shī,teacher,Book 2,2,2
+朋友,péng you,friend,Book 2,2,3
+吃,chī,to eat,Book 2,3,1
+喝,hē,to drink,Book 2,3,2

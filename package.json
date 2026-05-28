@@ -1,0 +1,30 @@
+{
+  "name": "tcflashcards-fullstack",
+  "version": "1.0.0",
+  "description": "Traditional Chinese Flashcards - Full Stack Application",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../TCFlashcardsReact && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd TCFlashcardsReact && npm run dev",
+    "build:frontend": "cd TCFlashcardsReact && npm run build",
+    "setup:db": "cd backend && npm run init-db && npm run seed-db",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd TCFlashcardsReact && npm run preview"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "flashcards",
+    "chinese",
+    "traditional-chinese",
+    "mandarin",
+    "react",
+    "express",
+    "postgresql"
+  ],
+  "author": "",
+  "license": "MIT"
+}
