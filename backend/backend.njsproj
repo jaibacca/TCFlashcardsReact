@@ -33,6 +33,11 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="DATABASE_SCHEMA.md" />
+    <Content Include="render.yaml" />
+    <Content Include="scripts\add-multiuser-tables.sql" />
+    <Content Include="scripts\init-db-multiuser.js" />
+    <Content Include="scripts\init-db-production.js" />
     <Content Include="server.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />

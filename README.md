@@ -183,12 +183,23 @@ Frontend will run on http://localhost:5173
 
 ## 📖 Documentation
 
+### Setup Guides
 - **[BACKEND_SETUP.md](BACKEND_SETUP.md)** - Detailed backend setup and troubleshooting
 - **[FRONTEND_INTEGRATION.md](FRONTEND_INTEGRATION.md)** - Frontend-backend integration guide
+- **[VISUAL_STUDIO_GUIDE.md](VISUAL_STUDIO_GUIDE.md)** - Visual Studio setup
+
+### Feature Documentation
 - **[backend/README.md](backend/README.md)** - API documentation
 - **[TCFlashcardsReact/README.md](TCFlashcardsReact/README.md)** - Frontend features
 - **[TCFlashcardsReact/QUICKSTART.md](TCFlashcardsReact/QUICKSTART.md)** - Quick start guide
 - **[TCFlashcardsReact/STATISTICS_GUIDE.md](TCFlashcardsReact/STATISTICS_GUIDE.md)** - Statistics feature guide
+
+### 🚀 Deployment Guides (NEW!)
+- **[DEPLOYMENT_README.md](DEPLOYMENT_README.md)** - 📌 START HERE for deployment
+- **[DEPLOYMENT_GUIDE_BEGINNERS.md](DEPLOYMENT_GUIDE_BEGINNERS.md)** - Step-by-step deployment guide
+- **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Deployment checklist
+- **[DEPLOYMENT_TROUBLESHOOTING.md](DEPLOYMENT_TROUBLESHOOTING.md)** - Fix deployment issues
+- **[DEPLOYMENT_QUICK_REFERENCE.md](DEPLOYMENT_QUICK_REFERENCE.md)** - Quick reference for deployed apps
 
 ## 🎯 Usage
 
@@ -273,39 +284,38 @@ curl http://localhost:3001/api/flashcards/books
 
 ## 🚢 Deployment
 
-### Backend Deployment Options
+**Want to deploy your app to the internet for free?**
 
-**Free Hosting**:
-- **Railway.app** (Recommended) - PostgreSQL + Backend
-- **Render.com** - Free tier available
-- **Heroku** - With PostgreSQL addon
-- **Fly.io** - Free allowance
+### 🌟 Recommended: Supabase + Vercel (Easiest!)
 
-### Frontend Deployment Options
+👉 **[Start here: DEPLOYMENT_README.md](DEPLOYMENT_README.md)** 👈
 
-- **Vercel** (Recommended) - Free, automatic deployments
-- **Netlify** - Free tier
-- **GitHub Pages** - Free static hosting
-- **Cloudflare Pages** - Free
+**Why Supabase?**
+- ✅ **20-30 minutes** total setup (vs 60 min with Render)
+- ✅ **No database expiration** (free forever!)
+- ✅ **No cold starts** (always instant)
+- ✅ **No backend server** to maintain
+- ✅ **2 services instead of 3** (simpler!)
 
-### Deployment Steps
+### 📚 Supabase Deployment Guides
+- **[Beginner's Guide](DEPLOYMENT_GUIDE_SUPABASE.md)** - Complete walkthrough
+- **[Deployment Checklist](DEPLOYMENT_CHECKLIST_SUPABASE.md)** - Step-by-step
+- **[Troubleshooting](DEPLOYMENT_TROUBLESHOOTING_SUPABASE.md)** - Fix issues
+- **[Quick Reference](DEPLOYMENT_QUICK_REFERENCE_SUPABASE.md)** - Commands & URLs
 
-1. **Deploy Backend**:
-   - Choose a platform (e.g., Railway)
-   - Connect your repository
-   - Add PostgreSQL database
-   - Set environment variables
-   - Deploy
+### 🎯 What You'll Deploy To
+- **Frontend**: Vercel (Free, always on, fast CDN)
+- **Backend + Database**: Supabase (Free forever, 500 MB database)
 
-2. **Update Frontend**:
-   - Set `VITE_API_URL` to your backend URL
-   - Build: `npm run build`
-   - Deploy `dist/` folder
+**Total cost: $0** 💸 | **Setup time: 20-30 minutes** ⏱️
 
-3. **Update CORS**:
-   - In `backend/server.js`, update CORS origin to your frontend URL
+### 🔀 Alternative: Traditional Stack (Render)
 
-See [DEPLOYMENT.md](TCFlashcardsReact/DEPLOYMENT.md) for detailed instructions.
+If you prefer Express.js backend:
+- **[Render Deployment Guide](DEPLOYMENT_README_RENDER.md)** - Traditional 3-tier setup
+- **[Migration Guide](MIGRATION_EXPRESS_TO_SUPABASE.md)** - Switch from Render to Supabase
+
+**We recommend Supabase** for easier deployment and no maintenance! 🚀
 
 ## 🛠️ Development
 
