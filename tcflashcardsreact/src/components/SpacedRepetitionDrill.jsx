@@ -66,7 +66,8 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     if (!data || data.length === 0) return;
 
     const now = new Date();
-    const queue = [];
+    const dueQueue = [];
+    const masteredCards = [];
 
     console.log('🔍 SpacedRepetition: Building review queue...');
     console.log(`📊 Total cards in database: ${data.length}`);
@@ -83,20 +84,45 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
 
         if (isDue) {
           console.log(`✅ Card due: ${cardKey}, next review: ${reviewData.nextReviewDate}`);
-          queue.push({ ...card, reviewData });
+          dueQueue.push({ ...card, reviewData });
         } else {
-          console.log(`⏰ Card not due yet: ${cardKey}, next review: ${reviewData.nextReviewDate}`);
+          // Check if card is mastered (interval > 21 days = at least 4 successful reviews)
+          if (reviewData.interval >= 21) {
+            masteredCards.push({ ...card, reviewData });
+          }
+          console.log(`⏰ Card not due yet: ${cardKey}, next review: ${reviewData.nextReviewDate}, interval: ${reviewData.interval} days`);
         }
       }
     });
 
-    console.log(`🎯 Cards due for review: ${queue.length}`);
+    console.log(`🎯 Cards due for review: ${dueQueue.length}`);
+    console.log(`🏆 Mastered cards available: ${masteredCards.length}`);
 
-    // Shuffle and limit to 20 cards
-    const shuffled = queue.sort(() => Math.random() - 0.5);
-    const limited = shuffled.slice(0, 20);
+    // Shuffle due cards
+    const shuffledDue = dueQueue.sort(() => Math.random() - 0.5);
 
-    console.log(`📋 Final queue size (max 20): ${limited.length}`);
+    // Add 2-3 random mastered cards for long-term retention check (if available)
+    let finalQueue = shuffledDue;
+    if (masteredCards.length > 0 && shuffledDue.length < 20) {
+      const numMasteredToAdd = Math.min(
+        3, // Add up to 3 mastered cards
+        masteredCards.length,
+        20 - shuffledDue.length // Don't exceed 20 total
+      );
+
+      const randomMastered = masteredCards
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numMasteredToAdd)
+        .map(card => ({ ...card, isMasteredReview: true })); // Flag as mastered review
+
+      finalQueue = [...shuffledDue, ...randomMastered];
+      console.log(`✨ Added ${numMasteredToAdd} mastered cards for long-term retention check`);
+    }
+
+    // Limit to 20 cards total
+    const limited = finalQueue.slice(0, 20);
+
+    console.log(`📋 Final queue size: ${limited.length} (${limited.filter(c => c.isMasteredReview).length} mastered)`);
     setReviewQueue(limited);
     setCurrentIndex(0);
   }, [data, cardReviewData]);
@@ -194,6 +220,7 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
           <p>You don't have any flashcards due for review right now.</p>
           <p>Use other drills to learn new cards, or come back later when your reviews are due.</p>
           <p className="hint">💡 Tip: Complete chapters with Chapter Progression to add cards to your review queue!</p>
+          <p className="hint">🏆 Note: We also include a few random mastered cards to check long-term retention!</p>
         </div>
       </div>
     );
@@ -242,6 +269,9 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
       </div>
 
       <div className="card-info">
+        {currentCard.isMasteredReview && (
+          <span className="mastered-badge">🏆 Long-term Check</span>
+        )}
         {currentCard.isNew && <span className="new-badge">NEW</span>}
         {currentCard.reviewData && (
           <span className="review-count">Review #{currentCard.reviewData.reviews + 1}</span>

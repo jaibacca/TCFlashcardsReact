@@ -21,7 +21,7 @@ export const getCardKey = (card) => {
 export const updateCardStats = (card, isCorrect, drillType = null) => {
   const cardKey = getCardKey(card);
   const saved = localStorage.getItem('tcFlashcardsStats');
-  
+
   const stats = saved ? JSON.parse(saved) : {
     drills: {
       hanziToPinyin: { attempts: 0, correct: 0, totalTime: 0 },
@@ -56,7 +56,7 @@ export const updateCardStats = (card, isCorrect, drillType = null) => {
       lastReviewed: null
     };
   }
-  
+
   stats.cardHistory[cardKey].attempts += 1;
   if (isCorrect) {
     stats.cardHistory[cardKey].correctCount += 1;
@@ -66,11 +66,11 @@ export const updateCardStats = (card, isCorrect, drillType = null) => {
   // Update streak
   const today = new Date().toDateString();
   const lastStudy = stats.streaks.lastStudyDate;
-  
+
   if (lastStudy !== today) {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (lastStudy === yesterday.toDateString()) {
       stats.streaks.current += 1;
     } else if (lastStudy === null) {
@@ -78,12 +78,35 @@ export const updateCardStats = (card, isCorrect, drillType = null) => {
     } else {
       stats.streaks.current = 1;
     }
-    
+
     stats.streaks.longest = Math.max(stats.streaks.longest, stats.streaks.current);
     stats.streaks.lastStudyDate = today;
   }
 
   localStorage.setItem('tcFlashcardsStats', JSON.stringify(stats));
+
+  // Also add card to Spaced Repetition review data if not already there
+  const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+
+  if (!reviewData[cardKey]) {
+    const now = new Date();
+    // Initialize with appropriate interval based on correctness
+    const initialInterval = isCorrect ? 1 : 0; // 1 day if correct, immediate if wrong
+    const nextReview = new Date(now);
+    nextReview.setDate(nextReview.getDate() + initialInterval);
+
+    reviewData[cardKey] = {
+      easeFactor: 2.5,
+      interval: initialInterval,
+      nextReviewDate: nextReview.toISOString(),
+      reviews: 1,
+      lastReview: now.toISOString()
+    };
+
+    localStorage.setItem('tcFlashcardsReviewData', JSON.stringify(reviewData));
+    console.log(`✅ Added card to SRS: ${cardKey} (from ${drillType}), nextReview: ${reviewData[cardKey].nextReviewDate}`);
+  }
+
   return stats;
 };
 

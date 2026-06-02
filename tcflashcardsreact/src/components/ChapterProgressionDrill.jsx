@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
-import { updateCardStats, getCardKey } from '../utils/statsUtils';
+import { updateCardStats } from '../utils/statsUtils';
 import './ChapterProgressionDrill.css';
 
 const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
@@ -179,37 +179,8 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     setShowAnswer(true);
 
-    // Update unified card stats
+    // Update unified card stats (also adds to review data automatically)
     updateCardStats(currentCard, isCorrect, 'chapterProgression');
-    const cardKey = getCardKey(currentCard);
-
-    // Also add to review data for Spaced Repetition
-    const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
-
-    console.log(`🔍 ChapterProgression: Processing card ${cardKey}`);
-    console.log(`📝 Existing review data for this card:`, reviewData[cardKey]);
-
-    if (!reviewData[cardKey]) {
-      // Initialize card in SRS system
-      const now = new Date();
-      // Set initial review based on how well they did
-      const initialInterval = isCorrect ? 1 : 0; // 1 day if correct, immediate if wrong
-      const nextReview = new Date(now);
-      nextReview.setDate(nextReview.getDate() + initialInterval);
-
-      reviewData[cardKey] = {
-        easeFactor: 2.5,
-        interval: initialInterval,
-        nextReviewDate: nextReview.toISOString(),
-        reviews: 1,
-        lastReview: now.toISOString()
-      };
-
-      localStorage.setItem('tcFlashcardsReviewData', JSON.stringify(reviewData));
-      console.log(`✅ Added card to SRS: ${cardKey}, nextReview: ${reviewData[cardKey].nextReviewDate}, isCorrect: ${isCorrect}`);
-    } else {
-      console.log(`ℹ️ Card already in SRS: ${cardKey}`);
-    }
   };
 
   const handleNext = () => {
