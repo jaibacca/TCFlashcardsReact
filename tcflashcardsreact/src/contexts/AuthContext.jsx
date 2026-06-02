@@ -33,6 +33,21 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithEmail = async (email) => {
     try {
+      // Check for rate limit cooldown (client-side)
+      const lastAttempt = localStorage.getItem('lastAuthAttempt');
+      if (lastAttempt) {
+        const timeSinceLastAttempt = Date.now() - parseInt(lastAttempt);
+        const cooldownPeriod = 10000; // 10 seconds client-side cooldown
+
+        if (timeSinceLastAttempt < cooldownPeriod) {
+          const waitTime = Math.ceil((cooldownPeriod - timeSinceLastAttempt) / 1000);
+          throw new Error(`Please wait ${waitTime} seconds before trying again`);
+        }
+      }
+
+      // Record this attempt
+      localStorage.setItem('lastAuthAttempt', Date.now().toString());
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {

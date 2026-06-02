@@ -11,7 +11,7 @@ const Auth = () => {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    
+
     if (!email) {
       setMessage('Please enter your email');
       return;
@@ -29,7 +29,12 @@ const Auth = () => {
       setEmail('');
       setShowForm(false);
     } else {
-      setMessage(`❌ ${error}`);
+      // Handle rate limit error specifically
+      if (error && error.toLowerCase().includes('rate limit')) {
+        setMessage('⏰ Too many requests. Please wait 60 seconds and try again, or check your email for a previous magic link.');
+      } else {
+        setMessage(`❌ ${error}`);
+      }
     }
   };
 

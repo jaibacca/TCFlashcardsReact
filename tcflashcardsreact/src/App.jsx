@@ -269,7 +269,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>Traditional Chinese Learning Platform © 2024</p>
+        <p>Jaibock Lee © {new Date().getFullYear()}</p>
       </footer>
     </div>
   )
