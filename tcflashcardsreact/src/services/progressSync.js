@@ -7,14 +7,29 @@ export const progressSyncService = {
   /**
    * Save progress to Supabase for a logged-in user
    */
-  async saveProgressToCloud(userId, stats) {
+  async saveProgressToCloud(userId, stats, chapterProgress = null, reviewData = null) {
     try {
-      // Save overall stats as JSON
+      // Load existing chapter and review data if not provided
+      if (chapterProgress === null) {
+        const saved = localStorage.getItem('tcFlashcardsChapterProgress');
+        chapterProgress = saved ? JSON.parse(saved) : {};
+      }
+
+      if (reviewData === null) {
+        const saved = localStorage.getItem('tcFlashcardsReviewData');
+        reviewData = saved ? JSON.parse(saved) : {};
+      }
+
+      // Save overall stats including chapter and review data as JSON
       const { error: statsError } = await supabase
         .from('user_progress')
         .upsert({
           user_id: userId,
-          stats_data: stats,
+          stats_data: {
+            ...stats,
+            chapterProgress,
+            reviewData
+          },
           last_synced: new Date().toISOString()
         }, {
           onConflict: 'user_id'
@@ -68,6 +83,8 @@ export const progressSyncService = {
       drills: {},
       cardHistory: {},
       streaks: {},
+      chapterProgress: {},
+      reviewData: {},
       totalCards: Math.max(localStats.totalCards || 0, cloudStats.totalCards || 0)
     };
 
@@ -76,7 +93,7 @@ export const progressSyncService = {
     drillTypes.forEach(type => {
       const local = localStats.drills?.[type] || { attempts: 0, correct: 0, totalTime: 0 };
       const cloud = cloudStats.drills?.[type] || { attempts: 0, correct: 0, totalTime: 0 };
-      
+
       merged.drills[type] = {
         attempts: Math.max(local.attempts, cloud.attempts),
         correct: Math.max(local.correct, cloud.correct),
@@ -93,22 +110,75 @@ export const progressSyncService = {
     allCardIds.forEach(cardId => {
       const local = localStats.cardHistory?.[cardId] || { attempts: 0, correctCount: 0 };
       const cloud = cloudStats.cardHistory?.[cardId] || { attempts: 0, correctCount: 0 };
-      
+
       merged.cardHistory[cardId] = {
         attempts: Math.max(local.attempts, cloud.attempts),
-        correctCount: Math.max(local.correctCount, cloud.correctCount)
+        correctCount: Math.max(local.correctCount, cloud.correctCount),
+        lastReviewed: local.lastReviewed || cloud.lastReviewed
       };
     });
 
     // Merge streaks (keep best)
     const localStreaks = localStats.streaks || { current: 0, longest: 0, lastStudyDate: null };
     const cloudStreaks = cloudStats.streaks || { current: 0, longest: 0, lastStudyDate: null };
-    
+
     merged.streaks = {
       current: Math.max(localStreaks.current, cloudStreaks.current),
       longest: Math.max(localStreaks.longest, cloudStreaks.longest),
       lastStudyDate: localStreaks.lastStudyDate || cloudStreaks.lastStudyDate
     };
+
+    // Merge chapter progress (keep most recent and completed status)
+    const allChapters = new Set([
+      ...Object.keys(localStats.chapterProgress || {}),
+      ...Object.keys(cloudStats.chapterProgress || {})
+    ]);
+
+    allChapters.forEach(chapterId => {
+      const local = localStats.chapterProgress?.[chapterId];
+      const cloud = cloudStats.chapterProgress?.[chapterId];
+
+      if (!local) {
+        merged.chapterProgress[chapterId] = cloud;
+      } else if (!cloud) {
+        merged.chapterProgress[chapterId] = local;
+      } else {
+        // Both exist - merge intelligently
+        const localDate = new Date(local.lastStudied || 0);
+        const cloudDate = new Date(cloud.lastStudied || 0);
+        const mostRecent = localDate > cloudDate ? local : cloud;
+
+        merged.chapterProgress[chapterId] = {
+          completed: local.completed || cloud.completed, // Mark complete if either says so
+          accuracy: Math.max(local.accuracy || 0, cloud.accuracy || 0),
+          lastStudied: mostRecent.lastStudied,
+          attempts: Math.max(local.attempts || 0, cloud.attempts || 0)
+        };
+      }
+    });
+
+    // Merge spaced repetition review data (keep most recent review per card)
+    const allReviewCards = new Set([
+      ...Object.keys(localStats.reviewData || {}),
+      ...Object.keys(cloudStats.reviewData || {})
+    ]);
+
+    allReviewCards.forEach(cardId => {
+      const local = localStats.reviewData?.[cardId];
+      const cloud = cloudStats.reviewData?.[cardId];
+
+      if (!local) {
+        merged.reviewData[cardId] = cloud;
+      } else if (!cloud) {
+        merged.reviewData[cardId] = local;
+      } else {
+        // Both exist - keep most recent review
+        const localDate = new Date(local.lastReview || 0);
+        const cloudDate = new Date(cloud.lastReview || 0);
+
+        merged.reviewData[cardId] = localDate > cloudDate ? local : cloud;
+      }
+    });
 
     return merged;
   },
@@ -122,23 +192,44 @@ export const progressSyncService = {
       const localStatsStr = localStorage.getItem('tcFlashcardsStats');
       const localStats = localStatsStr ? JSON.parse(localStatsStr) : null;
 
+      // Get local chapter progress
+      const localChapterStr = localStorage.getItem('tcFlashcardsChapterProgress');
+      const localChapter = localChapterStr ? JSON.parse(localChapterStr) : {};
+
+      // Get local review data
+      const localReviewStr = localStorage.getItem('tcFlashcardsReviewData');
+      const localReview = localReviewStr ? JSON.parse(localReviewStr) : {};
+
+      // Combine local data
+      const combinedLocal = {
+        ...localStats,
+        chapterProgress: localChapter,
+        reviewData: localReview
+      };
+
       // Get cloud progress
       const { success, data: cloudStats, error } = await this.loadProgressFromCloud(userId);
-      
+
       if (!success) {
         console.warn('Could not load cloud progress:', error);
         return { success: false, error };
       }
 
       // Merge progress
-      const mergedStats = this.mergeProgress(localStats, cloudStats);
+      const mergedStats = this.mergeProgress(combinedLocal, cloudStats);
 
-      // Save merged progress to both locations
-      localStorage.setItem('tcFlashcardsStats', JSON.stringify(mergedStats));
-      await this.saveProgressToCloud(userId, mergedStats);
+      // Save merged progress to localStorage (split into separate keys)
+      const { chapterProgress, reviewData, ...mainStats } = mergedStats;
 
-      console.log('✅ Progress synced on login');
-      return { success: true, stats: mergedStats };
+      localStorage.setItem('tcFlashcardsStats', JSON.stringify(mainStats));
+      localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify(chapterProgress || {}));
+      localStorage.setItem('tcFlashcardsReviewData', JSON.stringify(reviewData || {}));
+
+      // Save to cloud
+      await this.saveProgressToCloud(userId, mainStats, chapterProgress, reviewData);
+
+      console.log('✅ Progress synced on login (including chapter progress and review data)');
+      return { success: true, stats: mainStats };
     } catch (error) {
       console.error('❌ Sync on login failed:', error);
       return { success: false, error: error.message };

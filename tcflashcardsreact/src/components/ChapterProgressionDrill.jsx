@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { progressSyncService } from '../services/progressSync';
 import './ChapterProgressionDrill.css';
 
 const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
+  const { user } = useAuth();
   const [currentChapter, setCurrentChapter] = useState(null);
   const [chapterCards, setChapterCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -180,6 +183,13 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
       localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify(updated));
       setChapterProgress(updated);
+
+      // Sync to cloud if user is logged in
+      if (user) {
+        const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
+        const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+        progressSyncService.saveProgressToCloud(user.id, stats, updated, reviewData);
+      }
 
       // Move to next chapter automatically
       moveToNextChapter(updated);

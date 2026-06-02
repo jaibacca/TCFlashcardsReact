@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { progressSyncService } from '../services/progressSync';
 import './SpacedRepetitionDrill.css';
 
 // SM-2 Algorithm for Spaced Repetition (Anki method)
@@ -40,6 +42,7 @@ const calculateNextReview = (easeFactor, interval, quality) => {
 };
 
 const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
+  const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [reviewQueue, setReviewQueue] = useState([]);
   const [userAnswer, setUserAnswer] = useState({ pinyin: '', english: '' });
@@ -129,19 +132,27 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     localStorage.setItem('tcFlashcardsReviewData', JSON.stringify(updated));
 
     // Update stats
-    localStorage.setItem('tcFlashcardsStats', JSON.stringify({
-      ...JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}'),
+    const currentStats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
+    const updatedStats = {
+      ...currentStats,
       cardHistory: {
-        ...JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}').cardHistory,
+        ...currentStats.cardHistory,
         [cardKey]: {
-          ...JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}').cardHistory?.[cardKey],
-          attempts: (JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}').cardHistory?.[cardKey]?.attempts || 0) + 1,
-          correctCount: (JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}').cardHistory?.[cardKey]?.correctCount || 0) + (quality >= 3 ? 1 : 0),
+          ...currentStats.cardHistory?.[cardKey],
+          attempts: (currentStats.cardHistory?.[cardKey]?.attempts || 0) + 1,
+          correctCount: (currentStats.cardHistory?.[cardKey]?.correctCount || 0) + (quality >= 3 ? 1 : 0),
           lastReviewed: new Date().toISOString()
         }
       }
-    }));
-  }, [cardReviewData]);
+    };
+    localStorage.setItem('tcFlashcardsStats', JSON.stringify(updatedStats));
+
+    // Sync to cloud if user is logged in
+    if (user) {
+      const chapterProgress = JSON.parse(localStorage.getItem('tcFlashcardsChapterProgress') || '{}');
+      progressSyncService.saveProgressToCloud(user.id, updatedStats, chapterProgress, updated);
+    }
+  }, [cardReviewData, user]);
 
   const handleRating = (quality) => {
     if (currentIndex >= reviewQueue.length) return;
