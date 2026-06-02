@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { parseCSV, filterData } from './utils/csvParser'
 import { getNextIncompleteChapter } from './utils/chapterUtils'
 import { flashcardsApi } from './services/api'
@@ -271,6 +272,8 @@ function App() {
       <footer className="app-footer">
         <p>Jaibock Lee © {new Date().getFullYear()}</p>
       </footer>
+
+      <Analytics />
     </div>
   )
 }
