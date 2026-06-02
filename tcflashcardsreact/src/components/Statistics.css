@@ -42,7 +42,7 @@
 
 .stat-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: white !important;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -58,13 +58,13 @@
   font-size: 36px;
   font-weight: bold;
   margin-bottom: 8px;
-  color: white;
+  color: white !important;
 }
 
 .stat-label {
   font-size: 14px;
-  color: white;
-  opacity: 0.9;
+  color: white !important;
+  opacity: 1;
 }
 
 .streak-section {

@@ -78,18 +78,22 @@ const Statistics = ({ allData }) => {
     return Math.round((drill.correct / drill.attempts) * 100);
   };
 
-  const getTotalAttempts = () => {
-    return Object.values(stats.drills).reduce((sum, drill) => sum + drill.attempts, 0);
-  };
-
-  const getTotalCorrect = () => {
-    return Object.values(stats.drills).reduce((sum, drill) => sum + drill.correct, 0);
-  };
-
+  // Calculate overall accuracy from unified card history (not drill stats)
   const getOverallAccuracy = () => {
-    const total = getTotalAttempts();
-    if (total === 0) return 0;
-    return Math.round((getTotalCorrect() / total) * 100);
+    const cardHistory = Object.values(stats.cardHistory || {});
+    if (cardHistory.length === 0) return 0;
+
+    const totalAttempts = cardHistory.reduce((sum, card) => sum + (card.attempts || 0), 0);
+    const totalCorrect = cardHistory.reduce((sum, card) => sum + (card.correctCount || 0), 0);
+
+    if (totalAttempts === 0) return 0;
+    return Math.round((totalCorrect / totalAttempts) * 100);
+  };
+
+  // Calculate total attempts from unified card history (not drill stats)
+  const getTotalAttempts = () => {
+    const cardHistory = Object.values(stats.cardHistory || {});
+    return cardHistory.reduce((sum, card) => sum + (card.attempts || 0), 0);
   };
 
   const getMasteredCards = () => {
