@@ -162,10 +162,28 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
   const handleNext = () => {
     const nextIndex = currentIndex + 1;
-    
+
     if (nextIndex >= chapterCards.length) {
-      // Chapter complete
-      saveChapterProgress();
+      // Chapter complete - mark it and move to next chapter automatically
+      const chapterKey = `${currentChapter.book}_${currentChapter.chapter}`;
+      const accuracy = chapterStats.total > 0 ? (chapterStats.correct / chapterStats.total) * 100 : 0;
+
+      const updated = {
+        ...chapterProgress,
+        [chapterKey]: {
+          completed: true,
+          accuracy: Math.round(accuracy),
+          lastStudied: new Date().toISOString(),
+          attempts: (chapterProgress[chapterKey]?.attempts || 0) + 1
+        }
+      };
+
+      localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify(updated));
+      setChapterProgress(updated);
+
+      // Move to next chapter automatically
+      moveToNextChapter(updated);
+      return;
     }
 
     setShowAnswer(false);
@@ -174,72 +192,67 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
     setCurrentIndex(nextIndex);
   };
 
-  const handleOptionSelect = (option) => {
-    if (!showAnswer) {
-      setSelectedOption(option);
-    }
-  };
+  const moveToNextChapter = (updatedProgress) => {
+    // Group cards by book and chapter
+    const chapters = {};
+    data.forEach(card => {
+      const key = `${card.Book}_${card.Chapter}`;
+      if (!chapters[key]) {
+        chapters[key] = {
+          book: card.Book,
+          chapter: card.Chapter,
+          cards: []
+        };
+      }
+      chapters[key].cards.push(card);
+    });
 
-  const moveToNextChapter = () => {
-    saveChapterProgress();
-    
-    // Force re-initialization with next chapter
-    const allKeys = Object.keys(chapterProgress).sort((a, b) => {
+    // Get sorted chapter keys
+    const chapterKeys = Object.keys(chapters).sort((a, b) => {
       const [bookA, chapA] = a.split('_').map(Number);
       const [bookB, chapB] = b.split('_').map(Number);
       if (bookA !== bookB) return bookA - bookB;
       return chapA - chapB;
     });
 
-    const currentKey = `${currentChapter.book}_${currentChapter.chapter}`;
-    const currentIdx = allKeys.indexOf(currentKey);
-    
-    // Clear progress to force finding next chapter
-    setCurrentChapter(null);
-    setChapterCards([]);
-    setCurrentIndex(0);
-    
-    // Trigger re-initialization
-    window.location.reload();
+    // Find next incomplete chapter
+    let nextChapter = null;
+    for (const key of chapterKeys) {
+      if (!updatedProgress[key] || !updatedProgress[key].completed) {
+        nextChapter = chapters[key];
+        break;
+      }
+    }
+
+    // If all complete, start over from first chapter
+    if (!nextChapter && chapterKeys.length > 0) {
+      nextChapter = chapters[chapterKeys[0]];
+      // Reset all progress
+      localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify({}));
+    }
+
+    if (nextChapter) {
+      setCurrentChapter(nextChapter);
+      setChapterCards(nextChapter.cards.sort(() => Math.random() - 0.5));
+      setCurrentIndex(0);
+      setChapterStats({ correct: 0, total: 0 });
+      setShowAnswer(false);
+      setUserAnswer({ pinyin: '', english: '' });
+      setSelectedOption(null);
+    }
   };
 
-  if (!currentChapter) {
+  const handleOptionSelect = (option) => {
+    if (!showAnswer) {
+      setSelectedOption(option);
+    }
+  };
+
+  if (!currentChapter || currentIndex >= chapterCards.length) {
     return (
       <div className="drill-container">
         <div className="loading-message">
-          <h2>Loading chapter...</h2>
-        </div>
-      </div>
-    );
-  }
-
-  if (currentIndex >= chapterCards.length) {
-    const accuracy = chapterStats.total > 0 ? Math.round((chapterStats.correct / chapterStats.total) * 100) : 0;
-
-    return (
-      <div className="drill-container">
-        <div className="chapter-complete">
-          <h2>🎉 Chapter Complete!</h2>
-          <div className="chapter-title">
-            Book {currentChapter.book} - Chapter {currentChapter.chapter}
-          </div>
-          <div className="chapter-summary">
-            <div className="summary-stat">
-              <span className="summary-value">{chapterStats.correct}</span>
-              <span className="summary-label">Correct</span>
-            </div>
-            <div className="summary-stat">
-              <span className="summary-value">{chapterStats.total}</span>
-              <span className="summary-label">Total</span>
-            </div>
-            <div className="summary-stat">
-              <span className="summary-value">{accuracy}%</span>
-              <span className="summary-label">Accuracy</span>
-            </div>
-          </div>
-          <button className="next-chapter-btn" onClick={moveToNextChapter}>
-            Continue to Next Chapter →
-          </button>
+          <h2>Loading next chapter...</h2>
         </div>
       </div>
     );

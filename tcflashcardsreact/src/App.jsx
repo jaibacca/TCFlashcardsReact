@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { parseCSV, filterData } from './utils/csvParser'
+import { getNextIncompleteChapter } from './utils/chapterUtils'
 import { flashcardsApi } from './services/api'
 import DataSelector from './components/DataSelector'
 import Statistics from './components/Statistics'
@@ -21,6 +22,7 @@ function App() {
   const [isMultipleChoice, setIsMultipleChoice] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [nextChapter, setNextChapter] = useState(null);
 
   // Load flashcards from Supabase on component mount
   useEffect(() => {
@@ -42,6 +44,11 @@ function App() {
 
         setAllData(formattedData);
         setFilteredData(formattedData);
+
+        // Get next incomplete chapter for button label
+        const nextChap = getNextIncompleteChapter(formattedData);
+        setNextChapter(nextChap);
+
         console.log(`✅ Loaded ${formattedData.length} flashcards from Supabase`);
       } catch (err) {
         console.error('Failed to load flashcards from Supabase:', err);
@@ -93,6 +100,11 @@ function App() {
 
   const exitDrill = () => {
     setCurrentDrill(null);
+    // Update next chapter info when exiting drill
+    if (allData.length > 0) {
+      const nextChap = getNextIncompleteChapter(allData);
+      setNextChapter(nextChap);
+    }
   };
 
   // Show loading state
@@ -207,7 +219,11 @@ function App() {
                 <div className="drill-card featured" onClick={() => startDrill('chapterProgression')}>
                   <div className="drill-icon">📚</div>
                   <h3>Chapter Progression</h3>
-                  <p>Systematic learning chapter by chapter</p>
+                  <p>
+                    {nextChapter 
+                      ? `Current: Book ${nextChapter.book}, Chapter ${nextChapter.chapter}`
+                      : 'Systematic learning chapter by chapter'}
+                  </p>
                   <span className="drill-badge">Structured</span>
                 </div>
               </div>
