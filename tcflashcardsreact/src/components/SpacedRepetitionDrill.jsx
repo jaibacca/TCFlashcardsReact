@@ -67,21 +67,35 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     const now = new Date();
     const queue = [];
 
+    console.log('🔍 SpacedRepetition: Building review queue...');
+    console.log(`📊 Total cards in database: ${data.length}`);
+    console.log(`📚 Review data entries: ${Object.keys(cardReviewData).length}`);
+
     data.forEach(card => {
       const cardKey = `${card.Hanzi}_${card.Pinyin}`;
       const reviewData = cardReviewData[cardKey];
 
       // Only include cards that have been reviewed before (no NEW cards)
-      if (reviewData && new Date(reviewData.nextReviewDate) <= now) {
-        // Due for review
-        queue.push({ ...card, reviewData });
+      if (reviewData) {
+        const nextReviewDate = new Date(reviewData.nextReviewDate);
+        const isDue = nextReviewDate <= now;
+
+        if (isDue) {
+          console.log(`✅ Card due: ${cardKey}, next review: ${reviewData.nextReviewDate}`);
+          queue.push({ ...card, reviewData });
+        } else {
+          console.log(`⏰ Card not due yet: ${cardKey}, next review: ${reviewData.nextReviewDate}`);
+        }
       }
     });
+
+    console.log(`🎯 Cards due for review: ${queue.length}`);
 
     // Shuffle and limit to 20 cards
     const shuffled = queue.sort(() => Math.random() - 0.5);
     const limited = shuffled.slice(0, 20);
 
+    console.log(`📋 Final queue size (max 20): ${limited.length}`);
     setReviewQueue(limited);
     setCurrentIndex(0);
   }, [data, cardReviewData]);

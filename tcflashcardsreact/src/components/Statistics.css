@@ -58,10 +58,12 @@
   font-size: 36px;
   font-weight: bold;
   margin-bottom: 8px;
+  color: white;
 }
 
 .stat-label {
   font-size: 14px;
+  color: white;
   opacity: 0.9;
 }
 

@@ -164,6 +164,10 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     // Also add to review data for Spaced Repetition
     const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+
+    console.log(`🔍 ChapterProgression: Processing card ${cardKey}`);
+    console.log(`📝 Existing review data for this card:`, reviewData[cardKey]);
+
     if (!reviewData[cardKey]) {
       // Initialize card in SRS system
       const now = new Date();
@@ -181,6 +185,9 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
       };
 
       localStorage.setItem('tcFlashcardsReviewData', JSON.stringify(reviewData));
+      console.log(`✅ Added card to SRS: ${cardKey}, nextReview: ${reviewData[cardKey].nextReviewDate}, isCorrect: ${isCorrect}`);
+    } else {
+      console.log(`ℹ️ Card already in SRS: ${cardKey}`);
     }
   };
 
