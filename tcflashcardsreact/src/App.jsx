@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { parseCSV, filterData } from './utils/csvParser'
+import { flashcardsApi } from './services/api'
 import DataSelector from './components/DataSelector'
 import Statistics from './components/Statistics'
 import HanziToPinyinDrill from './components/HanziToPinyinDrill'
@@ -15,6 +16,40 @@ function App() {
   const [selectedChapters, setSelectedChapters] = useState([]);
   const [currentDrill, setCurrentDrill] = useState(null);
   const [isMultipleChoice, setIsMultipleChoice] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Load flashcards from Supabase on component mount
+  useEffect(() => {
+    async function loadFlashcards() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await flashcardsApi.getAll();
+
+        // Convert Supabase data format to match CSV format
+        const formattedData = data.map(card => ({
+          Hanzi: card.hanzi,
+          Pinyin: card.pinyin,
+          English: card.english,
+          Book: card.book,
+          Chapter: card.chapter,
+          Order: card.order_num
+        }));
+
+        setAllData(formattedData);
+        setFilteredData(formattedData);
+        console.log(`✅ Loaded ${formattedData.length} flashcards from Supabase`);
+      } catch (err) {
+        console.error('Failed to load flashcards from Supabase:', err);
+        setError('Failed to load flashcards. Please check your Supabase connection.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadFlashcards();
+  }, []);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
