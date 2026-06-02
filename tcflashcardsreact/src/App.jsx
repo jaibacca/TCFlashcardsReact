@@ -3,6 +3,7 @@ import { parseCSV, filterData } from './utils/csvParser'
 import { flashcardsApi } from './services/api'
 import DataSelector from './components/DataSelector'
 import Statistics from './components/Statistics'
+import Auth from './components/Auth'
 import HanziToPinyinDrill from './components/HanziToPinyinDrill'
 import PinyinToEnglishDrill from './components/PinyinToEnglishDrill'
 import PinyinToHanziDrill from './components/PinyinToHanziDrill'
@@ -167,6 +168,8 @@ function App() {
             ✓ Loaded {allData.length} flashcards from database
           </div>
         )}
+
+        <Auth />
 
         {allData.length > 0 && (
           <>

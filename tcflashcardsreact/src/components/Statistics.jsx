@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { progressSyncService } from '../services/progressSync';
 import './Statistics.css';
 
 const Statistics = ({ allData }) => {
   const [stats, setStats] = useState(null);
+  const { user } = useAuth();
 
+  // Load stats from localStorage or cloud
   useEffect(() => {
-    const loadStats = () => {
+    const loadStats = async () => {
       const saved = localStorage.getItem('tcFlashcardsStats');
       if (saved) {
         setStats(JSON.parse(saved));
@@ -27,9 +31,34 @@ const Statistics = ({ allData }) => {
         });
       }
     };
-    
+
     loadStats();
   }, [allData]);
+
+  // Sync progress when user logs in
+  useEffect(() => {
+    if (user) {
+      const syncProgress = async () => {
+        console.log('🔄 Syncing progress for user:', user.email);
+        const result = await progressSyncService.syncOnLogin(user.id);
+        if (result.success && result.stats) {
+          setStats(result.stats);
+          console.log('✅ Progress synced successfully');
+        }
+      };
+      syncProgress();
+    }
+  }, [user]);
+
+  // Auto-save to cloud when stats change (if user is signed in)
+  useEffect(() => {
+    if (user && stats) {
+      const saveToCloud = async () => {
+        await progressSyncService.saveProgressToCloud(user.id, stats);
+      };
+      saveToCloud();
+    }
+  }, [stats, user]);
 
   if (!stats) return null;
 
