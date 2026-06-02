@@ -137,7 +137,8 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     setChapterStats(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
-      total: prev.total + 1
+      total: prev.total + 1,
+      isCorrect // Store the result for display
     }));
 
     setShowAnswer(true);
@@ -333,6 +334,10 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
         {showAnswer && (
           <div className="answer-reveal">
+            <div className={`result ${chapterStats.isCorrect ? 'correct' : 'incorrect'}`}>
+              {chapterStats.isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+            </div>
+
             <div className="correct-answer">
               <h3>Correct Answer:</h3>
               <p><strong>Pinyin:</strong> {currentCard.Pinyin}</p>

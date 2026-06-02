@@ -227,6 +227,25 @@
   font-style: italic;
 }
 
+.result {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.result.correct {
+  background: #d4edda;
+  color: #155724;
+}
+
+.result.incorrect {
+  background: #f8d7da;
+  color: #721c24;
+}
+
 .loading-message,
 .chapter-complete {
   text-align: center;
