@@ -19,7 +19,9 @@ const Statistics = ({ allData }) => {
             hanziToPinyin: { attempts: 0, correct: 0, totalTime: 0 },
             pinyinToEnglish: { attempts: 0, correct: 0, totalTime: 0 },
             pinyinToHanzi: { attempts: 0, correct: 0, totalTime: 0 },
-            englishToHanzi: { attempts: 0, correct: 0, totalTime: 0 }
+            englishToHanzi: { attempts: 0, correct: 0, totalTime: 0 },
+            spacedRepetition: { attempts: 0, correct: 0, totalTime: 0 },
+            chapterProgression: { attempts: 0, correct: 0, totalTime: 0 }
           },
           cardHistory: {},
           streaks: {
@@ -66,7 +68,9 @@ const Statistics = ({ allData }) => {
     hanziToPinyin: 'Hanzi → Pinyin + English',
     pinyinToEnglish: 'Pinyin → English',
     pinyinToHanzi: 'Pinyin → Hanzi',
-    englishToHanzi: 'English → Hanzi'
+    englishToHanzi: 'English → Hanzi',
+    spacedRepetition: 'Spaced Repetition',
+    chapterProgression: 'Chapter Progression'
   };
 
   const calculateAccuracy = (drill) => {
@@ -108,7 +112,9 @@ const Statistics = ({ allData }) => {
           hanziToPinyin: { attempts: 0, correct: 0, totalTime: 0 },
           pinyinToEnglish: { attempts: 0, correct: 0, totalTime: 0 },
           pinyinToHanzi: { attempts: 0, correct: 0, totalTime: 0 },
-          englishToHanzi: { attempts: 0, correct: 0, totalTime: 0 }
+          englishToHanzi: { attempts: 0, correct: 0, totalTime: 0 },
+          spacedRepetition: { attempts: 0, correct: 0, totalTime: 0 },
+          chapterProgression: { attempts: 0, correct: 0, totalTime: 0 }
         },
         cardHistory: {},
         streaks: {
@@ -227,66 +233,3 @@ const Statistics = ({ allData }) => {
 };
 
 export default Statistics;
-
-export const updateStatistics = (drillType, isCorrect, cardId) => {
-  const saved = localStorage.getItem('tcFlashcardsStats');
-  const stats = saved ? JSON.parse(saved) : {
-    drills: {
-      hanziToPinyin: { attempts: 0, correct: 0, totalTime: 0 },
-      pinyinToEnglish: { attempts: 0, correct: 0, totalTime: 0 },
-      pinyinToHanzi: { attempts: 0, correct: 0, totalTime: 0 },
-      englishToHanzi: { attempts: 0, correct: 0, totalTime: 0 }
-    },
-    cardHistory: {},
-    streaks: {
-      current: 0,
-      longest: 0,
-      lastStudyDate: null
-    },
-    totalCards: 0
-  };
-
-  // Update drill stats
-  if (stats.drills[drillType]) {
-    stats.drills[drillType].attempts += 1;
-    if (isCorrect) {
-      stats.drills[drillType].correct += 1;
-    }
-  }
-
-  // Update card history
-  if (!stats.cardHistory[cardId]) {
-    stats.cardHistory[cardId] = {
-      attempts: 0,
-      correctCount: 0,
-      lastAttempt: null
-    };
-  }
-  stats.cardHistory[cardId].attempts += 1;
-  if (isCorrect) {
-    stats.cardHistory[cardId].correctCount += 1;
-  }
-  stats.cardHistory[cardId].lastAttempt = new Date().toISOString();
-
-  // Update streak
-  const today = new Date().toDateString();
-  const lastStudy = stats.streaks.lastStudyDate;
-  
-  if (lastStudy !== today) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (lastStudy === yesterday.toDateString()) {
-      stats.streaks.current += 1;
-    } else if (lastStudy === null || lastStudy === today) {
-      stats.streaks.current = 1;
-    } else {
-      stats.streaks.current = 1;
-    }
-    
-    stats.streaks.longest = Math.max(stats.streaks.longest, stats.streaks.current);
-    stats.streaks.lastStudyDate = today;
-  }
-
-  localStorage.setItem('tcFlashcardsStats', JSON.stringify(stats));
-};

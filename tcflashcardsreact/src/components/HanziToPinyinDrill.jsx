@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { generateMultipleChoiceOptions } from '../utils/csvParser';
-import { updateStatistics } from './Statistics';
+import { updateCardStats } from '../utils/statsUtils';
 import './HanziToPinyinDrill.css';
 
 const HanziToPinyinDrill = ({ data, isMultipleChoice }) => {
@@ -44,8 +44,8 @@ const HanziToPinyinDrill = ({ data, isMultipleChoice }) => {
 
     setShowAnswer(true);
 
-    // Update statistics
-    updateStatistics('hanziToPinyin', isCorrect, currentCard.id || currentIndex);
+    // Update statistics with unified card stats
+    updateCardStats(currentCard, isCorrect, 'hanziToPinyin');
   };
 
   const nextCard = () => {

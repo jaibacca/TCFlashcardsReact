@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { generateMultipleChoiceOptions } from '../utils/csvParser';
-import { updateStatistics } from './Statistics';
+import { updateCardStats } from '../utils/statsUtils';
 import StrokeInput from './StrokeInput';
 import './EnglishToHanziDrill.css';
 
@@ -37,8 +37,8 @@ const EnglishToHanziDrill = ({ data, isMultipleChoice }) => {
 
     setShowAnswer(true);
 
-    // Update statistics
-    updateStatistics('englishToHanzi', isCorrect, currentCard.id || currentIndex);
+    // Update statistics with unified card stats
+    updateCardStats(currentCard, isCorrect, 'englishToHanzi');
   };
 
   const nextCard = () => {

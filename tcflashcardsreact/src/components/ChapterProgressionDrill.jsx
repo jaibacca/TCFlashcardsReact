@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
+import { updateCardStats, getCardKey } from '../utils/statsUtils';
 import './ChapterProgressionDrill.css';
 
 const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
@@ -146,21 +147,9 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     setShowAnswer(true);
 
-    // Save stats
-    const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
-    const cardKey = `${currentCard.Hanzi}_${currentCard.Pinyin}`;
-    localStorage.setItem('tcFlashcardsStats', JSON.stringify({
-      ...stats,
-      cardHistory: {
-        ...stats.cardHistory,
-        [cardKey]: {
-          ...stats.cardHistory?.[cardKey],
-          attempts: (stats.cardHistory?.[cardKey]?.attempts || 0) + 1,
-          correctCount: (stats.cardHistory?.[cardKey]?.correctCount || 0) + (isCorrect ? 1 : 0),
-          lastReviewed: new Date().toISOString()
-        }
-      }
-    }));
+    // Update unified card stats
+    updateCardStats(currentCard, isCorrect, 'chapterProgression');
+    const cardKey = getCardKey(currentCard);
 
     // Also add to review data for Spaced Repetition
     const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');

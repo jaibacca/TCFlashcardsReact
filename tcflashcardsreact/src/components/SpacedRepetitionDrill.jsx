@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
+import { updateCardStats, getCardKey } from '../utils/statsUtils';
 import './SpacedRepetitionDrill.css';
 
 // SM-2 Algorithm for Spaced Repetition (Anki method)
@@ -119,7 +120,7 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
   }, [currentIndex, isMultipleChoice, reviewQueue, data]);
 
   const saveReviewData = useCallback((card, quality) => {
-    const cardKey = `${card.Hanzi}_${card.Pinyin}`;
+    const cardKey = getCardKey(card);
     const existingData = cardReviewData[cardKey] || {
       easeFactor: 2.5,
       interval: 0,
@@ -145,21 +146,9 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     setCardReviewData(updated);
     localStorage.setItem('tcFlashcardsReviewData', JSON.stringify(updated));
 
-    // Update stats
-    const currentStats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
-    const updatedStats = {
-      ...currentStats,
-      cardHistory: {
-        ...currentStats.cardHistory,
-        [cardKey]: {
-          ...currentStats.cardHistory?.[cardKey],
-          attempts: (currentStats.cardHistory?.[cardKey]?.attempts || 0) + 1,
-          correctCount: (currentStats.cardHistory?.[cardKey]?.correctCount || 0) + (quality >= 3 ? 1 : 0),
-          lastReviewed: new Date().toISOString()
-        }
-      }
-    };
-    localStorage.setItem('tcFlashcardsStats', JSON.stringify(updatedStats));
+    // Update unified card stats
+    const isCorrect = quality >= 3;
+    updateCardStats(card, isCorrect, 'spacedRepetition');
 
     // Sync to cloud if user is logged in
     if (user) {
