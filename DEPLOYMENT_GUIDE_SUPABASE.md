@@ -271,7 +271,7 @@ Once deployed:
 1. Visit: `https://your-app-name.vercel.app`
 2. Should see your flashcard app homepage ✅
 3. No errors in browser (press F12 to check console)
-
+ 
 ### Test 2: Load Data from Supabase
 
 1. Click **"💾 Database"** button
