@@ -33,6 +33,66 @@
   background: #d32f2f;
 }
 
+.migration-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.migration-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.migration-icon {
+  font-size: 48px;
+  flex-shrink: 0;
+}
+
+.migration-text {
+  flex: 1;
+}
+
+.migration-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+
+.migration-text p {
+  margin: 4px 0;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.migration-hint {
+  font-size: 12px !important;
+  opacity: 0.8 !important;
+  font-style: italic;
+}
+
+.migration-btn {
+  padding: 12px 24px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.migration-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 .stats-overview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -258,5 +318,18 @@
   .streak-card {
     flex-direction: column;
     text-align: center;
+  }
+
+  .migration-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .migration-icon {
+    font-size: 36px;
+  }
+
+  .migration-btn {
+    width: 100%;
   }
 }

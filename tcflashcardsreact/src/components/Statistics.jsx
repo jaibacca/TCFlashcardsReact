@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
+import { migrateCardHistoryToReviewData, needsMigration } from '../utils/migrateReviewData';
 import './Statistics.css';
 
 const Statistics = ({ allData }) => {
   const [stats, setStats] = useState(null);
+  const [showMigrationBanner, setShowMigrationBanner] = useState(false);
   const { user } = useAuth();
 
   // Load stats from localStorage or cloud
@@ -36,6 +38,13 @@ const Statistics = ({ allData }) => {
 
     loadStats();
   }, [allData]);
+
+  // Check if migration is needed
+  useEffect(() => {
+    if (stats) {
+      setShowMigrationBanner(needsMigration());
+    }
+  }, [stats]);
 
   // Sync progress when user logs in
   useEffect(() => {
@@ -108,6 +117,27 @@ const Statistics = ({ allData }) => {
     ).length;
   };
 
+  const handleMigration = async () => {
+    if (window.confirm('This will add all your practiced cards to Spaced Repetition. This is recommended if you practiced cards before the latest update. Continue?')) {
+      const result = migrateCardHistoryToReviewData();
+
+      if (result.success) {
+        alert(`Migration successful! Added ${result.addedCount} cards to Spaced Repetition.`);
+        setShowMigrationBanner(false);
+
+        // If user is logged in, sync to cloud
+        if (user) {
+          const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+          const chapterProgress = JSON.parse(localStorage.getItem('tcFlashcardsChapterProgress') || '{}');
+          await progressSyncService.saveProgressToCloud(user.id, stats, chapterProgress, reviewData);
+          console.log('✅ Migration synced to cloud');
+        }
+      } else {
+        alert('Migration failed: ' + result.message);
+      }
+    }
+  };
+
   const clearStats = async () => {
     if (window.confirm('Are you sure you want to clear all statistics? This will delete all your progress including chapter progression and spaced repetition data. This cannot be undone.')) {
       // Clear all localStorage
@@ -163,6 +193,22 @@ const Statistics = ({ allData }) => {
         <h2>📊 Your Progress</h2>
         <button onClick={clearStats} className="clear-stats-btn">Clear Stats</button>
       </div>
+
+      {showMigrationBanner && (
+        <div className="migration-banner">
+          <div className="migration-content">
+            <div className="migration-icon">🔄</div>
+            <div className="migration-text">
+              <h3>Update Available!</h3>
+              <p>We found {Object.keys(stats.cardHistory || {}).length - Object.keys(JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}')).length} cards that need to be added to Spaced Repetition.</p>
+              <p className="migration-hint">This is a one-time update for cards you practiced before the latest version.</p>
+            </div>
+            <button onClick={handleMigration} className="migration-btn">
+              Migrate Now
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="stats-overview">
         <div className="stat-card highlight">
