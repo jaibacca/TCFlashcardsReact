@@ -104,10 +104,14 @@ const Statistics = ({ allData }) => {
     ).length;
   };
 
-  const clearStats = () => {
-    if (window.confirm('Are you sure you want to clear all statistics? This cannot be undone.')) {
+  const clearStats = async () => {
+    if (window.confirm('Are you sure you want to clear all statistics? This will delete all your progress including chapter progression and spaced repetition data. This cannot be undone.')) {
+      // Clear all localStorage
       localStorage.removeItem('tcFlashcardsStats');
-      setStats({
+      localStorage.removeItem('tcFlashcardsChapterProgress');
+      localStorage.removeItem('tcFlashcardsReviewData');
+
+      const emptyStats = {
         drills: {
           hanziToPinyin: { attempts: 0, correct: 0, totalTime: 0 },
           pinyinToEnglish: { attempts: 0, correct: 0, totalTime: 0 },
@@ -123,7 +127,29 @@ const Statistics = ({ allData }) => {
           lastStudyDate: null
         },
         totalCards: allData?.length || 0
-      });
+      };
+
+      setStats(emptyStats);
+
+      // If user is logged in, also clear from cloud database
+      if (user) {
+        console.log('🗑️ Clearing stats from cloud database for user:', user.email);
+        try {
+          await progressSyncService.saveProgressToCloud(
+            user.id,
+            emptyStats,
+            {}, // Empty chapter progress
+            {}  // Empty review data
+          );
+          console.log('✅ Cloud database cleared successfully');
+          alert('All statistics cleared successfully from both local storage and cloud database!');
+        } catch (error) {
+          console.error('❌ Failed to clear cloud database:', error);
+          alert('Statistics cleared locally, but failed to clear from cloud database. Please try again or contact support.');
+        }
+      } else {
+        alert('All local statistics cleared successfully!');
+      }
     }
   };
 
