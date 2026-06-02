@@ -18,7 +18,7 @@ function App() {
   const [selectedBooks, setSelectedBooks] = useState([]);
   const [selectedChapters, setSelectedChapters] = useState([]);
   const [currentDrill, setCurrentDrill] = useState(null);
-  const [isMultipleChoice, setIsMultipleChoice] = useState(false);
+  const [isMultipleChoice, setIsMultipleChoice] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
