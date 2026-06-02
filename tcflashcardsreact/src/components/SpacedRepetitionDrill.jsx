@@ -60,7 +60,7 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     }
   }, []);
 
-  // Build review queue based on due cards
+  // Build review queue based on due cards (only previously reviewed cards)
   useEffect(() => {
     if (!data || data.length === 0) return;
 
@@ -71,18 +71,18 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
       const cardKey = `${card.Hanzi}_${card.Pinyin}`;
       const reviewData = cardReviewData[cardKey];
 
-      if (!reviewData) {
-        // New card - add to queue
-        queue.push({ ...card, isNew: true });
-      } else if (new Date(reviewData.nextReviewDate) <= now) {
+      // Only include cards that have been reviewed before (no NEW cards)
+      if (reviewData && new Date(reviewData.nextReviewDate) <= now) {
         // Due for review
         queue.push({ ...card, reviewData });
       }
     });
 
-    // Shuffle queue
+    // Shuffle and limit to 20 cards
     const shuffled = queue.sort(() => Math.random() - 0.5);
-    setReviewQueue(shuffled);
+    const limited = shuffled.slice(0, 20);
+
+    setReviewQueue(limited);
     setCurrentIndex(0);
   }, [data, cardReviewData]);
 
@@ -187,9 +187,10 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     return (
       <div className="drill-container">
         <div className="no-cards-message">
-          <h2>🎉 All caught up!</h2>
-          <p>No cards due for review right now.</p>
-          <p>Come back later or practice other drills to add more cards to your review queue.</p>
+          <h2>🎉 No reviews due!</h2>
+          <p>You don't have any flashcards due for review right now.</p>
+          <p>Use other drills to learn new cards, or come back later when your reviews are due.</p>
+          <p className="hint">💡 Tip: Complete chapters with Chapter Progression to add cards to your review queue!</p>
         </div>
       </div>
     );

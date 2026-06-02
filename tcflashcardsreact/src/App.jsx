@@ -212,7 +212,7 @@ function App() {
                 <div className="drill-card featured" onClick={() => startDrill('spacedRepetition')}>
                   <div className="drill-icon">🧠</div>
                   <h3>Spaced Repetition</h3>
-                  <p>Smart review system using the Anki method</p>
+                  <p>Review up to 20 due cards using smart scheduling</p>
                   <span className="drill-badge">Smart</span>
                 </div>
 
