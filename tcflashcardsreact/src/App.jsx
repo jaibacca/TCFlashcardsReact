@@ -177,12 +177,6 @@ function App() {
       </header>
 
       <main className="main-content">
-        {allData.length > 0 && (
-          <div className="data-info">
-            ✓ Loaded {allData.length} flashcards from database
-          </div>
-        )}
-
         <Auth />
 
         {allData.length > 0 && (
