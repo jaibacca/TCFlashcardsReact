@@ -274,10 +274,12 @@ Once deployed:
  
 ### Test 2: Load Data from Supabase
 
-1. Click **"💾 Database"** button
-2. Click **"Load from Database"**
-3. Should see: "20 flashcards loaded" ✅
-4. Flashcards appear in the data selector
+**The flashcards load automatically!**
+
+1. Wait for the page to finish loading
+2. You should see: "✓ Loaded 20 flashcards from database" ✅
+3. Flashcards appear in the data selector below
+4. No need to click any "Load" button - it's automatic!
 
 ### Test 3: Select and Drill
 
