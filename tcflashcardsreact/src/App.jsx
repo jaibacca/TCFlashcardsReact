@@ -4,6 +4,8 @@ import { flashcardsApi } from './services/api'
 import DataSelector from './components/DataSelector'
 import Statistics from './components/Statistics'
 import Auth from './components/Auth'
+import SpacedRepetitionDrill from './components/SpacedRepetitionDrill'
+import ChapterProgressionDrill from './components/ChapterProgressionDrill'
 import HanziToPinyinDrill from './components/HanziToPinyinDrill'
 import PinyinToEnglishDrill from './components/PinyinToEnglishDrill'
 import PinyinToHanziDrill from './components/PinyinToHanziDrill'
@@ -74,6 +76,12 @@ function App() {
   }, [allData]);
 
   const startDrill = (drillType) => {
+    // Special drills don't need data filtering
+    if (drillType === 'spacedRepetition' || drillType === 'chapterProgression') {
+      setCurrentDrill({ type: drillType, data: allData });
+      return;
+    }
+
     if (filteredData.length === 0) {
       alert('Please load data and select at least one book/chapter first.');
       return;
@@ -139,6 +147,12 @@ function App() {
             ← Back to Menu
           </button>
         </header>
+        {currentDrill.type === 'spacedRepetition' && (
+          <SpacedRepetitionDrill data={allData} isMultipleChoice={isMultipleChoice} />
+        )}
+        {currentDrill.type === 'chapterProgression' && (
+          <ChapterProgressionDrill data={allData} isMultipleChoice={isMultipleChoice} />
+        )}
         {currentDrill.type === 'hanziToPinyin' && (
           <HanziToPinyinDrill data={currentDrill.data} isMultipleChoice={isMultipleChoice} />
         )}
@@ -173,13 +187,6 @@ function App() {
 
         {allData.length > 0 && (
           <>
-            <Statistics allData={allData} />
-
-            <DataSelector 
-              allData={allData}
-              onSelectionChange={handleSelectionChange}
-            />
-
             <section className="options-section">
               <div className="toggle-option">
                 <label className="toggle-label">
@@ -193,8 +200,27 @@ function App() {
               </div>
             </section>
 
+            <section className="drills-section featured-drills">
+              <h2>🚀 Recommended Drills</h2>
+              <div className="drills-grid featured">
+                <div className="drill-card featured" onClick={() => startDrill('spacedRepetition')}>
+                  <div className="drill-icon">🧠</div>
+                  <h3>Spaced Repetition</h3>
+                  <p>Smart review system using the Anki method</p>
+                  <span className="drill-badge">Smart</span>
+                </div>
+
+                <div className="drill-card featured" onClick={() => startDrill('chapterProgression')}>
+                  <div className="drill-icon">📚</div>
+                  <h3>Chapter Progression</h3>
+                  <p>Systematic learning chapter by chapter</p>
+                  <span className="drill-badge">Structured</span>
+                </div>
+              </div>
+            </section>
+
             <section className="drills-section">
-              <h2>Select a Drill</h2>
+              <h2>📝 Practice Drills</h2>
               <div className="drills-grid">
                 <div className="drill-card" onClick={() => startDrill('hanziToPinyin')}>
                   <div className="drill-icon">漢</div>
@@ -221,6 +247,13 @@ function App() {
                 </div>
               </div>
             </section>
+
+            <DataSelector 
+              allData={allData}
+              onSelectionChange={handleSelectionChange}
+            />
+
+            <Statistics allData={allData} />
           </>
         )}
       </main>

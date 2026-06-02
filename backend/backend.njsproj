@@ -36,6 +36,7 @@
     <Content Include="DATABASE_SCHEMA.md" />
     <Content Include="render.yaml" />
     <Content Include="scripts\add-multiuser-tables.sql" />
+    <Content Include="scripts\create-user-progress-table-fixed.sql" />
     <Content Include="scripts\create-user-progress-table.sql" />
     <Content Include="scripts\init-db-multiuser.js" />
     <Content Include="scripts\init-db-production.js" />

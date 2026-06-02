@@ -155,6 +155,11 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.drills-section.featured-drills {
+  background: linear-gradient(135deg, #f8f9ff 0%, #fff5f8 100%);
+  border: 2px solid #667eea;
+}
+
 .drills-section h2 {
   margin-top: 0;
   color: #333;
@@ -168,6 +173,11 @@ body {
   gap: 20px;
 }
 
+.drills-grid.featured {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
 .drill-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -176,6 +186,13 @@ body {
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
   text-align: center;
+  position: relative;
+}
+
+.drill-card.featured {
+  background: linear-gradient(135deg, #FF5722 0%, #FF8A65 100%);
+  padding: 40px;
+  box-shadow: 0 6px 20px rgba(255, 87, 34, 0.3);
 }
 
 .drill-card:hover {
@@ -183,9 +200,19 @@ body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
+.drill-card.featured:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(255, 87, 34, 0.4);
+}
+
 .drill-icon {
   font-size: 64px;
   margin-bottom: 15px;
+}
+
+.drill-card.featured .drill-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
 }
 
 .drill-card h3 {
@@ -193,10 +220,32 @@ body {
   font-size: 20px;
 }
 
+.drill-card.featured h3 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
 .drill-card p {
   margin: 0;
   opacity: 0.9;
   font-size: 14px;
+}
+
+.drill-card.featured p {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.drill-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 10px;
 }
 
 .app-footer {
