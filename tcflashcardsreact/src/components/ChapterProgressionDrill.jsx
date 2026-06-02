@@ -15,18 +15,49 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
   const [options, setOptions] = useState([]);
   const [chapterStats, setChapterStats] = useState({ correct: 0, total: 0 });
   const [chapterProgress, setChapterProgress] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load chapter progress from localStorage
+  // Sync chapter progress with cloud when user logs in
   useEffect(() => {
-    const saved = localStorage.getItem('tcFlashcardsChapterProgress');
-    if (saved) {
-      setChapterProgress(JSON.parse(saved));
-    }
-  }, []);
+    const syncChapterProgress = async () => {
+      if (user) {
+        console.log('🔄 Syncing chapter progress for user:', user.email);
+        try {
+          // Load from cloud
+          const { success, data: cloudStats } = await progressSyncService.loadProgressFromCloud(user.id);
+
+          if (success && cloudStats) {
+            // Use cloud chapter progress for logged-in users
+            const cloudChapter = cloudStats.chapterProgress || {};
+            console.log('✅ Loaded chapter progress from cloud:', Object.keys(cloudChapter).length, 'chapters');
+            setChapterProgress(cloudChapter);
+            localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify(cloudChapter));
+          } else {
+            // New user - start fresh
+            console.log('📝 New user - starting with empty chapter progress');
+            setChapterProgress({});
+            localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify({}));
+          }
+        } catch (error) {
+          console.error('❌ Failed to sync chapter progress:', error);
+          // Fallback to localStorage
+          const saved = localStorage.getItem('tcFlashcardsChapterProgress');
+          setChapterProgress(saved ? JSON.parse(saved) : {});
+        }
+      } else {
+        // Not logged in - use localStorage
+        const saved = localStorage.getItem('tcFlashcardsChapterProgress');
+        setChapterProgress(saved ? JSON.parse(saved) : {});
+      }
+      setIsLoading(false);
+    };
+
+    syncChapterProgress();
+  }, [user]); // Re-sync when user changes (login/logout)
 
   // Initialize with the first incomplete chapter
   useEffect(() => {
-    if (!data || data.length === 0) return;
+    if (!data || data.length === 0 || isLoading) return;
 
     // Group cards by book and chapter
     const chapters = {};
@@ -65,13 +96,14 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
     }
 
     if (targetChapter) {
+      console.log(`📚 Loading chapter: Book ${targetChapter.book}, Chapter ${targetChapter.chapter}`);
       setCurrentChapter(targetChapter);
       // Shuffle cards within chapter
       setChapterCards(targetChapter.cards.sort(() => Math.random() - 0.5));
       setCurrentIndex(0);
       setChapterStats({ correct: 0, total: 0 });
     }
-  }, [data, chapterProgress]);
+  }, [data, chapterProgress, isLoading]);
 
   // Generate multiple choice options
   useEffect(() => {
@@ -274,6 +306,17 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
       setSelectedOption(option);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="drill-container">
+        <div className="loading-message">
+          <h2>🔄 Syncing chapter progress...</h2>
+          <p>Loading your learning progress from the cloud</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentChapter || currentIndex >= chapterCards.length) {
     return (
