@@ -62,6 +62,20 @@
   font-weight: bold;
   color: #FF5722;
   margin-bottom: 15px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  .english-display {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .english-display {
+    font-size: 28px;
+  }
 }
 
 .pinyin-hint {

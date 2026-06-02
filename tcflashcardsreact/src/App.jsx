@@ -34,7 +34,7 @@ function App() {
           English: card.english,
           Book: card.book,
           Chapter: card.chapter,
-          Order: card.order_num
+          Order: card.order_num || card.id // Use id as fallback if order_num doesn't exist
         }));
 
         setAllData(formattedData);
@@ -86,6 +86,49 @@ function App() {
     setCurrentDrill(null);
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="app-container">
+        <header className="app-header">
+          <h1>Traditional Chinese Flashcards</h1>
+          <p className="subtitle">Master Mandarin with interactive drills</p>
+        </header>
+        <main className="main-content">
+          <div className="data-info">
+            ⏳ Loading flashcards from database...
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="app-container">
+        <header className="app-header">
+          <h1>Traditional Chinese Flashcards</h1>
+          <p className="subtitle">Master Mandarin with interactive drills</p>
+        </header>
+        <main className="main-content">
+          <div className="data-upload-section">
+            <div style={{ color: 'red', padding: '20px', textAlign: 'center', fontSize: '18px' }}>
+              ❌ {error}
+              <br /><br />
+              <button onClick={() => window.location.reload()} className="file-upload-label" style={{ fontSize: '16px' }}>
+                🔄 Retry Connection
+              </button>
+            </div>
+            <p style={{ marginTop: '20px', color: '#666', textAlign: 'center' }}>
+              Please check your internet connection and refresh the page.
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (currentDrill) {
     return (
       <div className="app-container">
@@ -119,29 +162,11 @@ function App() {
       </header>
 
       <main className="main-content">
-        <section className="data-upload-section">
-          <h2>Load Your Data</h2>
-          <div className="upload-area">
-            <label htmlFor="file-upload" className="file-upload-label">
-              📁 Upload CSV File
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="file-input"
-            />
-            <p className="upload-hint">
-              CSV should have columns: Hanzi, Pinyin, English, Book, Chapter, Order
-            </p>
+        {allData.length > 0 && (
+          <div className="data-info">
+            ✓ Loaded {allData.length} flashcards from database
           </div>
-          {allData.length > 0 && (
-            <div className="data-info">
-              ✓ Loaded {allData.length} flashcards
-            </div>
-          )}
-        </section>
+        )}
 
         {allData.length > 0 && (
           <>

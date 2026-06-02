@@ -9,7 +9,7 @@ export const flashcardsApi = {
       .select('*')
       .order('book', { ascending: true })
       .order('chapter', { ascending: true })
-      .order('order_num', { ascending: true });
+      .order('id', { ascending: true }); // Use id as fallback for ordering
 
     if (error) throw error;
     return data;
@@ -22,7 +22,7 @@ export const flashcardsApi = {
       .select('*')
       .order('book', { ascending: true })
       .order('chapter', { ascending: true })
-      .order('order_num', { ascending: true });
+      .order('id', { ascending: true }); // Use id as fallback
 
     if (error) throw error;
 
@@ -67,7 +67,7 @@ export const flashcardsApi = {
       .select('*')
       .eq('book', book)
       .order('chapter', { ascending: true })
-      .order('order_num', { ascending: true });
+      .order('id', { ascending: true }); // Use id as fallback
 
     if (error) throw error;
     return data;
@@ -80,7 +80,7 @@ export const flashcardsApi = {
       .select('*')
       .eq('book', book)
       .eq('chapter', chapter)
-      .order('order_num', { ascending: true });
+      .order('id', { ascending: true }); // Use id as fallback
 
     if (error) throw error;
     return data;

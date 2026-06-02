@@ -63,6 +63,20 @@
   color: #9C27B0;
   font-family: 'Arial', sans-serif;
   margin-bottom: 15px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  .pinyin-display {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pinyin-display {
+    font-size: 36px;
+  }
 }
 
 .english-hint {
