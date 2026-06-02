@@ -1,95 +1,198 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { supabase } from '../config/supabase';
 
-// Generic fetch wrapper with error handling
-async function apiFetch(endpoint, options = {}) {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
-  }
-}
-
-// Flashcard API
+// Flashcard API using Supabase
 export const flashcardsApi = {
   // Get all flashcards
-  getAll: () => apiFetch('/flashcards'),
+  getAll: async () => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('*')
+      .order('book', { ascending: true })
+      .order('chapter', { ascending: true })
+      .order('order_num', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
 
   // Get flashcards grouped by book and chapter
-  getGrouped: () => apiFetch('/flashcards/grouped'),
+  getGrouped: async () => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('*')
+      .order('book', { ascending: true })
+      .order('chapter', { ascending: true })
+      .order('order_num', { ascending: true });
+
+    if (error) throw error;
+
+    // Group by book and chapter
+    const grouped = {};
+    data.forEach(card => {
+      if (!grouped[card.book]) grouped[card.book] = {};
+      if (!grouped[card.book][card.chapter]) grouped[card.book][card.chapter] = [];
+      grouped[card.book][card.chapter].push(card);
+    });
+
+    return grouped;
+  },
 
   // Get all unique books
-  getBooks: () => apiFetch('/flashcards/books'),
+  getBooks: async () => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('book')
+      .order('book', { ascending: true });
+
+    if (error) throw error;
+    return [...new Set(data.map(d => d.book))];
+  },
 
   // Get chapters for a specific book
-  getChaptersByBook: (book) => apiFetch(`/flashcards/books/${encodeURIComponent(book)}/chapters`),
+  getChaptersByBook: async (book) => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('chapter')
+      .eq('book', book)
+      .order('chapter', { ascending: true });
+
+    if (error) throw error;
+    return [...new Set(data.map(d => d.chapter))];
+  },
 
   // Get flashcards by book
-  getByBook: (book) => apiFetch(`/flashcards/book/${encodeURIComponent(book)}`),
+  getByBook: async (book) => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('*')
+      .eq('book', book)
+      .order('chapter', { ascending: true })
+      .order('order_num', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
 
   // Get flashcards by book and chapter
-  getByBookAndChapter: (book, chapter) => 
-    apiFetch(`/flashcards/book/${encodeURIComponent(book)}/chapter/${encodeURIComponent(chapter)}`),
+  getByBookAndChapter: async (book, chapter) => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('*')
+      .eq('book', book)
+      .eq('chapter', chapter)
+      .order('order_num', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
 
   // Add a new flashcard
-  create: (flashcard) => apiFetch('/flashcards', {
-    method: 'POST',
-    body: JSON.stringify(flashcard),
-  }),
+  create: async (flashcard) => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .insert([flashcard])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
 
   // Bulk insert flashcards
-  bulkCreate: (flashcards) => apiFetch('/flashcards/bulk', {
-    method: 'POST',
-    body: JSON.stringify({ flashcards }),
-  }),
+  bulkCreate: async (flashcards) => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .insert(flashcards)
+      .select();
+
+    if (error) throw error;
+    return data;
+  },
 
   // Update a flashcard
-  update: (id, flashcard) => apiFetch(`/flashcards/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(flashcard),
-  }),
+  update: async (id, flashcard) => {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .update(flashcard)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
 
   // Delete a flashcard
-  delete: (id) => apiFetch(`/flashcards/${id}`, {
-    method: 'DELETE',
-  }),
+  delete: async (id) => {
+    const { error } = await supabase
+      .from('flashcards')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
 
   // Delete all flashcards
-  deleteAll: () => apiFetch('/flashcards', {
-    method: 'DELETE',
-  }),
+  deleteAll: async () => {
+    const { error } = await supabase
+      .from('flashcards')
+      .delete()
+      .neq('id', 0); // Delete all where id is not 0 (i.e., all rows)
+
+    if (error) throw error;
+  },
 };
 
-// Statistics API (for future use)
+// Statistics API (for future use with Supabase)
 export const statsApi = {
   // Get user statistics
-  getUserStats: (userId) => apiFetch(`/stats/user/${userId}`),
+  getUserStats: async (userId) => {
+    const { data, error } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return data;
+  },
 
   // Update user statistics
-  updateUserStats: (userId, data) => apiFetch(`/stats/user/${userId}`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
+  updateUserStats: async (userId, statsData) => {
+    const { data, error } = await supabase
+      .from('user_progress')
+      .upsert({ user_id: userId, ...statsData })
+      .select();
+
+    if (error) throw error;
+    return data;
+  },
 
   // Get card progress for a user
-  getCardProgress: (userId) => apiFetch(`/stats/user/${userId}/cards`),
+  getCardProgress: async (userId) => {
+    const { data, error } = await supabase
+      .from('user_progress')
+      .select('*, flashcards(*)')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return data;
+  },
 };
 
-// Health check
-export const healthCheck = () => apiFetch('/health');
+// Health check (check Supabase connection)
+export const healthCheck = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('flashcards')
+      .select('count')
+      .limit(1);
+
+    if (error) throw error;
+    return { status: 'ok', message: 'Supabase connected' };
+  } catch (error) {
+    return { status: 'error', message: error.message };
+  }
+};
 
 export default {
   flashcards: flashcardsApi,
