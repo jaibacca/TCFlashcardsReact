@@ -161,6 +161,27 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
         }
       }
     }));
+
+    // Also add to review data for Spaced Repetition
+    const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+    if (!reviewData[cardKey]) {
+      // Initialize card in SRS system
+      const now = new Date();
+      // Set initial review based on how well they did
+      const initialInterval = isCorrect ? 1 : 0; // 1 day if correct, immediate if wrong
+      const nextReview = new Date(now);
+      nextReview.setDate(nextReview.getDate() + initialInterval);
+
+      reviewData[cardKey] = {
+        easeFactor: 2.5,
+        interval: initialInterval,
+        nextReviewDate: nextReview.toISOString(),
+        reviews: 1,
+        lastReview: now.toISOString()
+      };
+
+      localStorage.setItem('tcFlashcardsReviewData', JSON.stringify(reviewData));
+    }
   };
 
   const handleNext = () => {
