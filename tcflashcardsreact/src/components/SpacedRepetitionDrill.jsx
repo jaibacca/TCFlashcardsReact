@@ -69,7 +69,7 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
 
     const now = new Date();
     const dueCards = [];
-    const masteredCards = [];
+    const notDueCards = []; // All reviewed cards that aren't due yet
 
     console.log('🔍 SpacedRepetition: Building review queue...');
     console.log(`📊 Total cards in database: ${data.length}`);
@@ -85,21 +85,21 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
 
         if (isDue) {
           dueCards.push({ ...card, reviewData });
-        } else if (reviewData.interval >= 21) {
-          // Mastered cards for long-term retention
-          masteredCards.push({ ...card, reviewData });
+        } else {
+          // Include ALL reviewed cards that aren't due
+          notDueCards.push({ ...card, reviewData });
         }
       }
     });
 
     console.log(`🎯 Cards due for review: ${dueCards.length}`);
-    console.log(`🏆 Mastered cards available: ${masteredCards.length}`);
+    console.log(`📝 Other reviewed cards: ${notDueCards.length}`);
 
     // Shuffle both arrays
     const shuffledDue = dueCards.sort(() => Math.random() - 0.5);
-    const shuffledMastered = masteredCards.sort(() => Math.random() - 0.5);
+    const shuffledNotDue = notDueCards.sort(() => Math.random() - 0.5);
 
-    // Build queue: start with due cards, fill rest with mastered
+    // Build queue: Always try to get 20 cards
     let queue = [];
 
     if (shuffledDue.length >= 20) {
@@ -109,18 +109,26 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
       // Take all due cards
       queue = [...shuffledDue];
 
-      // Fill remaining slots with mastered cards
+      // Fill remaining slots with any reviewed cards
       const slotsToFill = 20 - queue.length;
-      const masteredToAdd = shuffledMastered
+      const cardsToAdd = shuffledNotDue
         .slice(0, slotsToFill)
-        .map(card => ({ ...card, isMasteredReview: true }));
+        .map(card => {
+          // Mark as mastered review if interval >= 21, otherwise bonus review
+          if (card.reviewData.interval >= 21) {
+            return { ...card, isMasteredReview: true };
+          } else {
+            return { ...card, isExtraReview: true };
+          }
+        });
 
-      queue = [...queue, ...masteredToAdd];
+      queue = [...queue, ...cardsToAdd];
     }
 
     console.log(`📋 Final queue: ${queue.length} cards`);
-    console.log(`   - Due: ${queue.filter(c => !c.isMasteredReview).length}`);
+    console.log(`   - Due: ${queue.filter(c => !c.isMasteredReview && !c.isExtraReview).length}`);
     console.log(`   - Mastered: ${queue.filter(c => c.isMasteredReview).length}`);
+    console.log(`   - Extra: ${queue.filter(c => c.isExtraReview).length}`);
 
     setReviewQueue(queue);
     setCurrentIndex(0);
