@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
 import { updateCardStats, getCardKey } from '../utils/statsUtils';
@@ -52,6 +52,7 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
   const [options, setOptions] = useState([]);
   const [cardReviewData, setCardReviewData] = useState({});
   const [sessionStats, setSessionStats] = useState({ reviewed: 0, correct: 0, again: 0, good: 0 });
+  const queueInitialized = useRef(false);
 
   // Load review data from localStorage
   useEffect(() => {
@@ -61,17 +62,14 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     }
   }, []);
 
-  // Build review queue based on due cards (only previously reviewed cards)
+  // Build review queue based on due cards - ONLY ONCE
   useEffect(() => {
     if (!data || data.length === 0) return;
-
-    // Only build queue once on mount, not when cardReviewData changes
-    if (reviewQueue.length > 0) return;
+    if (queueInitialized.current) return; // Already built, don't rebuild
 
     const now = new Date();
-    const dueQueue = [];
+    const dueCards = [];
     const masteredCards = [];
-    const allReviewedCards = [];
 
     console.log('🔍 SpacedRepetition: Building review queue...');
     console.log(`📊 Total cards in database: ${data.length}`);
@@ -81,70 +79,53 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
       const cardKey = `${card.Hanzi}_${card.Pinyin}`;
       const reviewData = cardReviewData[cardKey];
 
-      // Only include cards that have been reviewed before (no NEW cards)
       if (reviewData) {
         const nextReviewDate = new Date(reviewData.nextReviewDate);
         const isDue = nextReviewDate <= now;
 
         if (isDue) {
-          console.log(`✅ Card due: ${cardKey}, next review: ${reviewData.nextReviewDate}`);
-          dueQueue.push({ ...card, reviewData });
-        } else {
-          // Check if card is mastered (interval > 21 days = at least 4 successful reviews)
-          if (reviewData.interval >= 21) {
-            masteredCards.push({ ...card, reviewData });
-          }
+          dueCards.push({ ...card, reviewData });
+        } else if (reviewData.interval >= 21) {
+          // Mastered cards for long-term retention
+          masteredCards.push({ ...card, reviewData });
         }
-
-        allReviewedCards.push({ ...card, reviewData });
       }
     });
 
-    console.log(`🎯 Cards due for review: ${dueQueue.length}`);
+    console.log(`🎯 Cards due for review: ${dueCards.length}`);
     console.log(`🏆 Mastered cards available: ${masteredCards.length}`);
-    console.log(`📝 Total reviewed cards: ${allReviewedCards.length}`);
 
-    // Shuffle due cards
-    let finalQueue = dueQueue.sort(() => Math.random() - 0.5);
+    // Shuffle both arrays
+    const shuffledDue = dueCards.sort(() => Math.random() - 0.5);
+    const shuffledMastered = masteredCards.sort(() => Math.random() - 0.5);
 
-    // Always try to get to 20 cards
-    const cardsNeeded = 20 - finalQueue.length;
+    // Build queue: start with due cards, fill rest with mastered
+    let queue = [];
 
-    if (cardsNeeded > 0) {
-      // First, try to add mastered cards
-      if (masteredCards.length > 0) {
-        const masteredToAdd = Math.min(cardsNeeded, masteredCards.length);
-        const randomMastered = masteredCards
-          .sort(() => Math.random() - 0.5)
-          .slice(0, masteredToAdd)
-          .map(card => ({ ...card, isMasteredReview: true }));
+    if (shuffledDue.length >= 20) {
+      // If we have 20+ due cards, just take 20 of them
+      queue = shuffledDue.slice(0, 20);
+    } else {
+      // Take all due cards
+      queue = [...shuffledDue];
 
-        finalQueue = [...finalQueue, ...randomMastered];
-        console.log(`✨ Added ${masteredToAdd} mastered cards for long-term retention`);
-      }
+      // Fill remaining slots with mastered cards
+      const slotsToFill = 20 - queue.length;
+      const masteredToAdd = shuffledMastered
+        .slice(0, slotsToFill)
+        .map(card => ({ ...card, isMasteredReview: true }));
 
-      // If still need more, add any reviewed cards not due yet
-      const stillNeeded = 20 - finalQueue.length;
-      if (stillNeeded > 0 && allReviewedCards.length > finalQueue.length) {
-        const otherCards = allReviewedCards
-          .filter(c => !finalQueue.some(fc => fc.Hanzi === c.Hanzi))
-          .sort(() => Math.random() - 0.5)
-          .slice(0, stillNeeded)
-          .map(card => ({ ...card, isExtraReview: true }));
-
-        finalQueue = [...finalQueue, ...otherCards];
-        console.log(`📚 Added ${otherCards.length} additional review cards to reach 20`);
-      }
+      queue = [...queue, ...masteredToAdd];
     }
 
-    console.log(`📋 Final queue size: ${finalQueue.length}`);
-    console.log(`   - Due: ${finalQueue.filter(c => !c.isMasteredReview && !c.isExtraReview).length}`);
-    console.log(`   - Mastered: ${finalQueue.filter(c => c.isMasteredReview).length}`);
-    console.log(`   - Extra: ${finalQueue.filter(c => c.isExtraReview).length}`);
+    console.log(`📋 Final queue: ${queue.length} cards`);
+    console.log(`   - Due: ${queue.filter(c => !c.isMasteredReview).length}`);
+    console.log(`   - Mastered: ${queue.filter(c => c.isMasteredReview).length}`);
 
-    setReviewQueue(finalQueue);
+    setReviewQueue(queue);
     setCurrentIndex(0);
-  }, [data]); // Only depend on data, not cardReviewData
+    queueInitialized.current = true; // Mark as initialized
+  }, [data, cardReviewData]);
 
   // Generate multiple choice options
   useEffect(() => {
