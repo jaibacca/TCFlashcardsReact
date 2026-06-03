@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { generateMultipleChoiceOptions } from '../utils/csvParser';
 import { updateCardStats } from '../utils/statsUtils';
-import { speakChinese } from '../utils/speechUtils';
+import { speakChinese, preloadAudio } from '../utils/speechUtils';
 import StrokeInput from './StrokeInput';
 import './PinyinToHanziDrill.css';
 
@@ -11,6 +11,13 @@ const PinyinToHanziDrill = ({ data, isMultipleChoice }) => {
   const [drawnHanzi, setDrawnHanzi] = useState(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+
+  // Preload audio for all cards on mount
+  useEffect(() => {
+    if (data && data.length > 0) {
+      preloadAudio(data);
+    }
+  }, [data]);
 
   if (!data || data.length === 0) {
     return <div className="drill-container">No data available. Please load data first.</div>;

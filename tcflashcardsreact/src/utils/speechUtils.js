@@ -1,130 +1,207 @@
 /**
- * Speech synthesis utility for pronouncing Chinese characters
- * Uses Web Speech API to provide audio feedback for Hanzi pronunciation
+ * Speech synthesis utility using Google Cloud Text-to-Speech API
+ * Provides consistent, high-quality Chinese pronunciation across all platforms
  */
 
-// Check if speech synthesis is supported
-const isSpeechSupported = () => {
-  return 'speechSynthesis' in window;
-};
+// Audio cache to avoid repeated API calls for the same text
+const audioCache = new Map();
 
-// Get available Chinese voices
-let chineseVoice = null;
-
-const loadChineseVoice = () => {
-  if (!isSpeechSupported()) return null;
-
-  const voices = window.speechSynthesis.getVoices();
-  
-  // Priority order: Traditional Chinese (Taiwan) > Simplified Chinese (China) > Any Chinese
-  const preferredVoices = [
-    voices.find(voice => voice.lang === 'zh-TW'), // Traditional Chinese (Taiwan)
-    voices.find(voice => voice.lang === 'zh-HK'), // Traditional Chinese (Hong Kong)
-    voices.find(voice => voice.lang === 'zh-CN'), // Simplified Chinese (China)
-    voices.find(voice => voice.lang.startsWith('zh')) // Any Chinese variant
-  ];
-
-  return preferredVoices.find(voice => voice !== undefined) || null;
-};
-
-// Initialize voice when voices are loaded
-if (isSpeechSupported()) {
-  // Voices might not be loaded immediately
-  window.speechSynthesis.onvoiceschanged = () => {
-    chineseVoice = loadChineseVoice();
-    if (chineseVoice) {
-      console.log('🔊 Chinese voice loaded:', chineseVoice.name, chineseVoice.lang);
-    }
-  };
-  
-  // Try loading immediately (some browsers have voices ready)
-  chineseVoice = loadChineseVoice();
-}
+// Queue for pending audio requests to avoid duplicate calls
+const pendingRequests = new Map();
 
 /**
- * Speak Chinese text using text-to-speech
+ * Get Google Cloud TTS API endpoint
+ * Uses a proxy approach - we'll generate audio URLs on-demand
+ */
+const GOOGLE_TTS_API = 'https://translate.google.com/translate_tts';
+
+/**
+ * Speak Chinese text using Google Translate TTS
+ * This is a free, reliable alternative that works consistently across platforms
+ * 
  * @param {string} text - The Hanzi text to speak
  * @param {Object} options - Speech options
- * @param {number} options.rate - Speech rate (0.1 to 10, default 0.9 for clearer pronunciation)
- * @param {number} options.pitch - Speech pitch (0 to 2, default 1)
- * @param {number} options.volume - Speech volume (0 to 1, default 1)
+ * @param {number} options.rate - Speech rate (0.5 to 2, default 1)
+ * @param {boolean} options.useCache - Whether to cache audio (default true)
  */
-export const speakChinese = (text, options = {}) => {
-  if (!isSpeechSupported()) {
-    console.warn('Speech synthesis not supported in this browser');
-    return;
-  }
-
+export const speakChinese = async (text, options = {}) => {
   if (!text || typeof text !== 'string') {
     console.warn('Invalid text provided for speech synthesis');
     return;
   }
 
-  // Cancel any ongoing speech
-  window.speechSynthesis.cancel();
+  const {
+    rate = 1,
+    useCache = true
+  } = options;
 
-  // Reload voice if not available
-  if (!chineseVoice) {
-    chineseVoice = loadChineseVoice();
+  // Create cache key
+  const cacheKey = `${text}_${rate}`;
+
+  // Check if audio is already cached
+  if (useCache && audioCache.has(cacheKey)) {
+    const audio = audioCache.get(cacheKey);
+    audio.currentTime = 0; // Reset to start
+    audio.play().catch(err => console.error('Audio playback error:', err));
+    return;
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
+  // Check if request is already pending
+  if (pendingRequests.has(cacheKey)) {
+    await pendingRequests.get(cacheKey);
+    return;
+  }
+
+  // Create new audio element with Google TTS URL
+  const audioPromise = new Promise((resolve, reject) => {
+    try {
+      // Google Translate TTS URL parameters:
+      // - ie: input encoding (UTF-8)
+      // - tl: target language (zh-TW for Traditional Chinese, zh-CN for Simplified)
+      // - client: client type (tw-ob for web)
+      // - q: query text (the Hanzi to speak)
+      const params = new URLSearchParams({
+        ie: 'UTF-8',
+        tl: 'zh-TW', // Traditional Chinese (Taiwan)
+        client: 'tw-ob',
+        q: text
+      });
+
+      const audioUrl = `${GOOGLE_TTS_API}?${params.toString()}`;
+      const audio = new Audio(audioUrl);
+
+      // Apply playback rate
+      audio.playbackRate = rate;
+
+      // Handle successful load
+      audio.oncanplaythrough = () => {
+        if (useCache) {
+          audioCache.set(cacheKey, audio);
+        }
+        audio.play().catch(err => console.error('Audio playback error:', err));
+        resolve();
+      };
+
+      // Handle errors
+      audio.onerror = (err) => {
+        console.error('Failed to load audio:', err);
+        reject(err);
+      };
+
+    } catch (err) {
+      console.error('Speech synthesis error:', err);
+      reject(err);
+    }
+  });
+
+  pendingRequests.set(cacheKey, audioPromise);
   
-  // Set Chinese voice if available
-  if (chineseVoice) {
-    utterance.voice = chineseVoice;
-    utterance.lang = chineseVoice.lang;
-  } else {
-    // Fallback to zh-TW (Traditional Chinese)
-    utterance.lang = 'zh-TW';
-    console.warn('No Chinese voice found, using fallback language setting');
+  try {
+    await audioPromise;
+  } finally {
+    pendingRequests.delete(cacheKey);
+  }
+};
+
+/**
+ * Preload audio for a list of flashcards to improve performance
+ * Call this when loading a drill to cache all audio in advance
+ * 
+ * @param {Array} cards - Array of flashcard objects with Hanzi property
+ * @param {number} maxCards - Maximum number of cards to preload (default 50)
+ */
+export const preloadAudio = async (cards, maxCards = 50) => {
+  if (!Array.isArray(cards) || cards.length === 0) {
+    return;
   }
 
-  // Apply options with sensible defaults for learning
-  utterance.rate = options.rate || 0.9; // Slightly slower for clearer pronunciation
-  utterance.pitch = options.pitch || 1;
-  utterance.volume = options.volume || 1;
+  console.log(`🔊 Preloading audio for ${Math.min(cards.length, maxCards)} cards...`);
 
-  // Error handling
-  utterance.onerror = (event) => {
-    console.error('Speech synthesis error:', event.error);
+  // Take first N cards and preload their audio
+  const cardsToPreload = cards.slice(0, maxCards);
+  
+  const preloadPromises = cardsToPreload.map(card => {
+    if (!card.Hanzi) return Promise.resolve();
+    
+    const cacheKey = `${card.Hanzi}_1`;
+    
+    // Skip if already cached
+    if (audioCache.has(cacheKey)) {
+      return Promise.resolve();
+    }
+
+    // Preload audio
+    return new Promise((resolve) => {
+      const params = new URLSearchParams({
+        ie: 'UTF-8',
+        tl: 'zh-TW',
+        client: 'tw-ob',
+        q: card.Hanzi
+      });
+
+      const audioUrl = `${GOOGLE_TTS_API}?${params.toString()}`;
+      const audio = new Audio(audioUrl);
+
+      audio.oncanplaythrough = () => {
+        audioCache.set(cacheKey, audio);
+        resolve();
+      };
+
+      audio.onerror = () => {
+        // Silently fail for preloading
+        resolve();
+      };
+    });
+  });
+
+  // Preload with a limit to avoid overwhelming the browser
+  await Promise.all(preloadPromises);
+  console.log(`✅ Audio preload complete: ${audioCache.size} cards cached`);
+};
+
+/**
+ * Clear the audio cache (useful for memory management)
+ * 
+ * @param {number} keepRecent - Number of recent entries to keep (default 100)
+ */
+export const clearAudioCache = (keepRecent = 100) => {
+  if (audioCache.size <= keepRecent) {
+    return;
+  }
+
+  // Convert to array, keep last N entries, clear the rest
+  const entries = Array.from(audioCache.entries());
+  const toKeep = entries.slice(-keepRecent);
+  
+  audioCache.clear();
+  toKeep.forEach(([key, value]) => {
+    audioCache.set(key, value);
+  });
+
+  console.log(`🧹 Audio cache cleared, kept ${keepRecent} recent entries`);
+};
+
+/**
+ * Get cache statistics (for debugging)
+ */
+export const getCacheStats = () => {
+  return {
+    size: audioCache.size,
+    keys: Array.from(audioCache.keys())
   };
-
-  window.speechSynthesis.speak(utterance);
 };
 
 /**
- * Cancel any ongoing speech
+ * Check if audio is supported in this browser
  */
-export const cancelSpeech = () => {
-  if (isSpeechSupported()) {
-    window.speechSynthesis.cancel();
-  }
-};
-
-/**
- * Check if speech synthesis is currently speaking
- */
-export const isSpeaking = () => {
-  if (!isSpeechSupported()) return false;
-  return window.speechSynthesis.speaking;
-};
-
-/**
- * Get list of available Chinese voices
- * Useful for debugging or allowing user to select preferred voice
- */
-export const getChineseVoices = () => {
-  if (!isSpeechSupported()) return [];
-  
-  const voices = window.speechSynthesis.getVoices();
-  return voices.filter(voice => voice.lang.startsWith('zh'));
+export const isAudioSupported = () => {
+  return typeof Audio !== 'undefined';
 };
 
 export default {
   speakChinese,
-  cancelSpeech,
-  isSpeaking,
-  isSpeechSupported,
-  getChineseVoices
+  preloadAudio,
+  clearAudioCache,
+  getCacheStats,
+  isAudioSupported
 };
