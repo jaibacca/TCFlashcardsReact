@@ -185,6 +185,7 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
 
   const [isCorrect, setIsCorrect] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [pendingQuality, setPendingQuality] = useState(null);
 
   const handleCheckAnswer = () => {
     const currentCard = reviewQueue[currentIndex];
@@ -204,26 +205,33 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     setFeedback(correct ? '✅ Correct!' : '❌ Incorrect');
     setShowAnswer(true);
 
-    // Automatically rate based on correctness
-    // Correct = quality 3 (good), Incorrect = quality 1 (again)
+    // Store quality for later, don't update stats yet
     const quality = correct ? 3 : 1;
-    saveReviewData(currentCard, quality);
-
-    // Update session stats
-    setSessionStats(prev => ({
-      reviewed: prev.reviewed + 1,
-      correct: correct ? prev.correct + 1 : prev.correct,
-      again: !correct ? prev.again + 1 : prev.again,
-      good: correct ? prev.good + 1 : prev.good
-    }));
+    setPendingQuality(quality);
   };
 
   const handleNextCard = () => {
+    // Now save the review data and update stats
+    if (pendingQuality !== null) {
+      const currentCard = reviewQueue[currentIndex];
+      saveReviewData(currentCard, pendingQuality);
+
+      // Update session stats
+      setSessionStats(prev => ({
+        reviewed: prev.reviewed + 1,
+        correct: pendingQuality >= 3 ? prev.correct + 1 : prev.correct,
+        again: pendingQuality < 3 ? prev.again + 1 : prev.again,
+        good: pendingQuality >= 3 ? prev.good + 1 : prev.good
+      }));
+    }
+
+    // Reset for next card
     setShowAnswer(false);
     setUserAnswer({ pinyin: '', english: '' });
     setSelectedOption(null);
     setIsCorrect(null);
     setFeedback('');
+    setPendingQuality(null);
     setCurrentIndex(prev => prev + 1);
   };
 

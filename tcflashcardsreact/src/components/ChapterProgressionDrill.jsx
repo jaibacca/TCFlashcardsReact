@@ -531,13 +531,12 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
         )}
 
         {showAnswer && (
-          <div className="answer-reveal">
-            <div className={`result ${chapterStats.isCorrect ? 'correct' : 'incorrect'}`}>
-              {chapterStats.isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+          <div className={`answer-reveal ${chapterStats.isCorrect ? 'correct' : 'incorrect'}`}>
+            <div className="feedback-message">
+              <h3>{chapterStats.isCorrect ? '✅ Correct!' : '❌ Incorrect'}</h3>
             </div>
 
             <div className="correct-answer">
-              <h3>Correct Answer:</h3>
               <p><strong>Pinyin:</strong> {currentCard.Pinyin}</p>
               <p><strong>English:</strong> {currentCard.English}</p>
               {currentCard.Book && <p className="metadata">Book {currentCard.Book}, Chapter {currentCard.Chapter}</p>}
