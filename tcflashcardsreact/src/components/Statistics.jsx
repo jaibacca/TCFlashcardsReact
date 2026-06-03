@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
 import { migrateCardHistoryToReviewData, needsMigration } from '../utils/migrateReviewData';
+import FlashcardStatsDetail from './FlashcardStatsDetail';
 import './Statistics.css';
 
 const Statistics = ({ allData }) => {
   const [stats, setStats] = useState(null);
   const [showMigrationBanner, setShowMigrationBanner] = useState(false);
+  const [showDetailedStats, setShowDetailedStats] = useState(false);
   const { user } = useAuth();
 
   // Load stats from localStorage or cloud
@@ -191,7 +193,12 @@ const Statistics = ({ allData }) => {
     <div className="statistics-container">
       <div className="stats-header">
         <h2>📊 Your Progress</h2>
-        <button onClick={clearStats} className="clear-stats-btn">Clear Stats</button>
+        <div className="stats-header-buttons">
+          <button onClick={() => setShowDetailedStats(true)} className="view-details-btn">
+            📋 View All Cards
+          </button>
+          <button onClick={clearStats} className="clear-stats-btn">Clear Stats</button>
+        </div>
       </div>
 
       {showMigrationBanner && (
@@ -303,6 +310,14 @@ const Statistics = ({ allData }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Detailed Stats Modal */}
+      {showDetailedStats && (
+        <FlashcardStatsDetail 
+          allData={allData}
+          onClose={() => setShowDetailedStats(false)}
+        />
       )}
     </div>
   );
