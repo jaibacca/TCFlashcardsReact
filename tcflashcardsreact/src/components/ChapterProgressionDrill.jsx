@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
 import { updateCardStats } from '../utils/statsUtils';
+import { speakChinese } from '../utils/speechUtils';
 import './ChapterProgressionDrill.css';
 
 const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
@@ -184,6 +185,9 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     // Update unified card stats (also adds to review data automatically)
     updateCardStats(currentCard, isCorrect, 'chapterProgression');
+
+    // Pronounce the Hanzi character
+    speakChinese(currentCard.Hanzi);
   };
 
   const handleNext = () => {

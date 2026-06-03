@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
 import { updateCardStats, getCardKey } from '../utils/statsUtils';
+import { speakChinese } from '../utils/speechUtils';
 import './SpacedRepetitionDrill.css';
 
 // SM-2 Algorithm for Spaced Repetition (Anki method)
@@ -206,6 +207,12 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
 
   const handleCheckAnswer = () => {
     setShowAnswer(true);
+
+    // Pronounce the Hanzi character
+    if (currentIndex < reviewQueue.length) {
+      const currentCard = reviewQueue[currentIndex];
+      speakChinese(currentCard.Hanzi);
+    }
   };
 
   const handleOptionSelect = (option) => {

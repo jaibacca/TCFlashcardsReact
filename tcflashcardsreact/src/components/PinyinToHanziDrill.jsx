@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { generateMultipleChoiceOptions } from '../utils/csvParser';
 import { updateCardStats } from '../utils/statsUtils';
+import { speakChinese } from '../utils/speechUtils';
 import StrokeInput from './StrokeInput';
 import './PinyinToHanziDrill.css';
 
@@ -39,6 +40,9 @@ const PinyinToHanziDrill = ({ data, isMultipleChoice }) => {
 
     // Update statistics with unified card stats
     updateCardStats(currentCard, isCorrect, 'pinyinToHanzi');
+
+    // Pronounce the Hanzi character
+    speakChinese(currentCard.Hanzi);
   };
 
   const nextCard = () => {
