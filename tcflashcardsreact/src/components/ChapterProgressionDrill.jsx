@@ -59,6 +59,9 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
   useEffect(() => {
     if (!data || data.length === 0 || isLoading) return;
 
+    // Don't re-initialize if already on a chapter (prevents reset on tab switch)
+    if (currentChapter !== null) return;
+
     // Group cards by book and chapter
     const chapters = {};
     data.forEach(card => {
@@ -103,7 +106,7 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
       setCurrentIndex(0);
       setChapterStats({ correct: 0, total: 0 });
     }
-  }, [data, chapterProgress, isLoading]);
+  }, [data, chapterProgress, isLoading, currentChapter]);
 
   // Generate multiple choice options
   useEffect(() => {
