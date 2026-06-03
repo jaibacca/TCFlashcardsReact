@@ -9,7 +9,7 @@ All drills now contribute to a **single, unified stats record** for each flashca
 - Each drill tracked stats separately
 - Card stats were identified by index (unreliable)
 - Same card in different drills = different stat entries
-- No way to see overall card mastery across all practice types
+- No way to see overall card mastery across all practice types 
 
 ### After (New System)
 - **Unified card identification**: Each card is identified by `Hanzi_Pinyin` (e.g., `你_nǐ`)
