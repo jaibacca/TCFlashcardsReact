@@ -26,17 +26,33 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
           // Load from cloud
           const { success, data: cloudStats } = await progressSyncService.loadProgressFromCloud(user.id);
 
-          if (success && cloudStats) {
+          if (success && cloudStats && cloudStats.chapterProgress) {
             // Use cloud chapter progress for logged-in users
             const cloudChapter = cloudStats.chapterProgress || {};
             console.log('✅ Loaded chapter progress from cloud:', Object.keys(cloudChapter).length, 'chapters');
             setChapterProgress(cloudChapter);
             localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify(cloudChapter));
           } else {
-            // New user - start fresh
-            console.log('📝 New user - starting with empty chapter progress');
-            setChapterProgress({});
-            localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify({}));
+            // No cloud data - check localStorage first (don't reset existing progress!)
+            const saved = localStorage.getItem('tcFlashcardsChapterProgress');
+            if (saved) {
+              const localProgress = JSON.parse(saved);
+              console.log('📱 Using local chapter progress:', Object.keys(localProgress).length, 'chapters');
+              setChapterProgress(localProgress);
+
+              // Sync local progress to cloud for this new user/device
+              if (user && Object.keys(localProgress).length > 0) {
+                console.log('☁️ Syncing local progress to cloud...');
+                const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
+                const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+                progressSyncService.saveProgressToCloud(user.id, stats, localProgress, reviewData);
+              }
+            } else {
+              // New user with no local or cloud data - start fresh
+              console.log('📝 New user - starting with empty chapter progress');
+              setChapterProgress({});
+              localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify({}));
+            }
           }
         } catch (error) {
           console.error('❌ Failed to sync chapter progress:', error);
@@ -184,6 +200,14 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     // Update unified card stats (also adds to review data automatically)
     updateCardStats(currentCard, isCorrect, 'chapterProgression');
+
+    // Sync to cloud immediately after each answer (if logged in)
+    if (user) {
+      const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
+      const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+      const currentProgress = JSON.parse(localStorage.getItem('tcFlashcardsChapterProgress') || '{}');
+      progressSyncService.saveProgressToCloud(user.id, stats, currentProgress, reviewData);
+    }
   };
 
   const handleNext = () => {

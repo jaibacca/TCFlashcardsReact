@@ -3,6 +3,8 @@
  * Ensures all drills contribute to the same card's stats regardless of drill type
  */
 
+import { progressSyncService } from '../services/progressSync';
+
 /**
  * Generate a consistent card key from a flashcard
  * @param {Object} card - Flashcard object with Hanzi and Pinyin properties
