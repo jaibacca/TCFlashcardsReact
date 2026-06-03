@@ -78,6 +78,11 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
     // Don't re-initialize if already on a chapter (prevents reset on tab switch)
     if (currentChapter !== null) return;
 
+    // Load card history to check which cards have been answered
+    const savedStats = localStorage.getItem('tcFlashcardsStats');
+    const stats = savedStats ? JSON.parse(savedStats) : { cardHistory: {} };
+    const cardHistory = stats.cardHistory || {};
+
     // Group cards by book and chapter
     const chapters = {};
     data.forEach(card => {
@@ -100,30 +105,54 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
       return chapA - chapB;
     });
 
+    // Helper function to check if a chapter is complete
+    // A chapter is complete when ALL cards in it have been answered at least once
+    const isChapterComplete = (chapterKey) => {
+      const chapter = chapters[chapterKey];
+      if (!chapter || !chapter.cards || chapter.cards.length === 0) return false;
+
+      // Check if every card in this chapter has been answered at least once
+      return chapter.cards.every(card => {
+        const cardKey = `${card.Hanzi}_${card.Pinyin}`;
+        return cardHistory[cardKey] && cardHistory[cardKey].attempts > 0;
+      });
+    };
+
     // Find next chapter to study
     let targetChapter = null;
 
-    // First, look for a chapter marked as "in progress"
+    // First, look for a chapter marked as "in progress" that's not complete
     for (const key of chapterKeys) {
-      if (chapterProgress[key]?.inProgress && !chapterProgress[key]?.completed) {
+      if (chapterProgress[key]?.inProgress && !isChapterComplete(key)) {
         targetChapter = chapters[key];
         console.log(`📖 Resuming in-progress chapter: ${key}`);
         break;
       }
     }
 
-    // If no in-progress chapter, find first incomplete chapter
+    // If no in-progress incomplete chapter, find first incomplete chapter
     if (!targetChapter) {
       for (const key of chapterKeys) {
-        if (!chapterProgress[key] || !chapterProgress[key].completed) {
+        if (!isChapterComplete(key)) {
           targetChapter = chapters[key];
-          console.log(`📘 Starting new chapter: ${key}`);
+          console.log(`📘 Starting incomplete chapter: ${key} (has unanswered cards)`);
           break;
         }
       }
     }
 
-    // If all complete, start from beginning
+    // If no incomplete chapters, check for in-progress complete chapters (review mode)
+    if (!targetChapter) {
+      for (const key of chapterKeys) {
+        if (chapterProgress[key]?.inProgress) {
+          targetChapter = chapters[key];
+          console.log(`📗 Reviewing in-progress chapter: ${key} (all cards answered)`);
+          break;
+        }
+      }
+    }
+
+    // If all complete and none in progress, start from beginning
     if (!targetChapter && chapterKeys.length > 0) {
       targetChapter = chapters[chapterKeys[0]];
       console.log(`🔄 All chapters complete, restarting from beginning`);
@@ -250,15 +279,26 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= chapterCards.length) {
-      // Chapter complete - mark it and move to next chapter automatically
+      // Finished this session - check if chapter is now complete
       const chapterKey = `${currentChapter.book}_${currentChapter.chapter}`;
       const accuracy = chapterStats.total > 0 ? (chapterStats.correct / chapterStats.total) * 100 : 0;
+
+      // Load card history to check if ALL cards in this chapter have been answered
+      const savedStats = localStorage.getItem('tcFlashcardsStats');
+      const stats = savedStats ? JSON.parse(savedStats) : { cardHistory: {} };
+      const cardHistory = stats.cardHistory || {};
+
+      // Check if all cards in current chapter have been answered at least once
+      const allCardsAnswered = currentChapter.cards.every(card => {
+        const cardKey = `${card.Hanzi}_${card.Pinyin}`;
+        return cardHistory[cardKey] && cardHistory[cardKey].attempts > 0;
+      });
 
       const updated = {
         ...chapterProgress,
         [chapterKey]: {
-          completed: true,
-          inProgress: false, // Remove in-progress flag
+          ...(chapterProgress[chapterKey] || {}),
+          completed: allCardsAnswered, // Only mark complete if ALL cards answered
           accuracy: Math.round(accuracy),
           lastStudied: new Date().toISOString(),
           attempts: (chapterProgress[chapterKey]?.attempts || 0) + 1
@@ -270,10 +310,11 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
       // Sync to cloud if user is logged in
       if (user) {
-        const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
         const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
         progressSyncService.saveProgressToCloud(user.id, stats, updated, reviewData);
       }
+
+      console.log(`✅ Chapter ${chapterKey} session complete. All cards answered: ${allCardsAnswered}`);
 
       // Move to next chapter automatically
       moveToNextChapter(updated);
@@ -287,6 +328,11 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
   };
 
   const moveToNextChapter = (updatedProgress) => {
+    // Load card history to check which cards have been answered
+    const savedStats = localStorage.getItem('tcFlashcardsStats');
+    const stats = savedStats ? JSON.parse(savedStats) : { cardHistory: {} };
+    const cardHistory = stats.cardHistory || {};
+
     // Group cards by book and chapter
     const chapters = {};
     data.forEach(card => {
@@ -309,11 +355,23 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
       return chapA - chapB;
     });
 
+    // Helper function to check if a chapter is complete
+    const isChapterComplete = (chapterKey) => {
+      const chapter = chapters[chapterKey];
+      if (!chapter || !chapter.cards || chapter.cards.length === 0) return false;
+
+      return chapter.cards.every(card => {
+        const cardKey = `${card.Hanzi}_${card.Pinyin}`;
+        return cardHistory[cardKey] && cardHistory[cardKey].attempts > 0;
+      });
+    };
+
     // Find next incomplete chapter
     let nextChapter = null;
     for (const key of chapterKeys) {
-      if (!updatedProgress[key] || !updatedProgress[key].completed) {
+      if (!isChapterComplete(key)) {
         nextChapter = chapters[key];
+        console.log(`➡️ Moving to next incomplete chapter: ${key}`);
         break;
       }
     }

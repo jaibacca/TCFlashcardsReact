@@ -2,9 +2,13 @@
 export const getNextIncompleteChapter = (data) => {
   if (!data || data.length === 0) return null;
 
-  // Load chapter progress from localStorage
-  const saved = localStorage.getItem('tcFlashcardsChapterProgress');
-  const chapterProgress = saved ? JSON.parse(saved) : {};
+  // Load chapter progress and card history from localStorage
+  const savedProgress = localStorage.getItem('tcFlashcardsChapterProgress');
+  const chapterProgress = savedProgress ? JSON.parse(savedProgress) : {};
+
+  const savedStats = localStorage.getItem('tcFlashcardsStats');
+  const stats = savedStats ? JSON.parse(savedStats) : { cardHistory: {} };
+  const cardHistory = stats.cardHistory || {};
 
   // Group cards by book and chapter
   const chapters = {};
@@ -14,9 +18,11 @@ export const getNextIncompleteChapter = (data) => {
       chapters[key] = {
         book: card.Book,
         chapter: card.Chapter,
-        key: key
+        key: key,
+        cards: []
       };
     }
+    chapters[key].cards.push(card);
   });
 
   // Get sorted chapter keys
@@ -27,22 +33,41 @@ export const getNextIncompleteChapter = (data) => {
     return chapA - chapB;
   });
 
-  // Find first incomplete chapter, prioritizing "in progress" chapters
-  // First, look for a chapter marked as "in progress"
+  // Helper function to check if a chapter is complete
+  // A chapter is complete when ALL cards in it have been answered at least once
+  const isChapterComplete = (chapterKey) => {
+    const chapter = chapters[chapterKey];
+    if (!chapter || !chapter.cards || chapter.cards.length === 0) return false;
+
+    // Check if every card in this chapter has been answered at least once
+    return chapter.cards.every(card => {
+      const cardKey = `${card.Hanzi}_${card.Pinyin}`;
+      return cardHistory[cardKey] && cardHistory[cardKey].attempts > 0;
+    });
+  };
+
+  // First, prioritize "in progress" chapters that are not yet complete
   for (const key of chapterKeys) {
-    if (chapterProgress[key]?.inProgress && !chapterProgress[key]?.completed) {
+    if (chapterProgress[key]?.inProgress && !isChapterComplete(key)) {
       return chapters[key];
     }
   }
 
-  // If no in-progress chapter, find first incomplete chapter
+  // If no in-progress incomplete chapter, find first incomplete chapter
   for (const key of chapterKeys) {
-    if (!chapterProgress[key] || !chapterProgress[key].completed) {
+    if (!isChapterComplete(key)) {
       return chapters[key];
     }
   }
 
-  // If all complete, return first chapter
+  // If all chapters are complete, return the in-progress chapter (for review)
+  for (const key of chapterKeys) {
+    if (chapterProgress[key]?.inProgress) {
+      return chapters[key];
+    }
+  }
+
+  // If all complete and none in progress, return first chapter
   if (chapterKeys.length > 0) {
     return chapters[chapterKeys[0]];
   }
