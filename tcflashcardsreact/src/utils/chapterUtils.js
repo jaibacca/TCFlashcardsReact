@@ -27,7 +27,15 @@ export const getNextIncompleteChapter = (data) => {
     return chapA - chapB;
   });
 
-  // Find first incomplete chapter
+  // Find first incomplete chapter, prioritizing "in progress" chapters
+  // First, look for a chapter marked as "in progress"
+  for (const key of chapterKeys) {
+    if (chapterProgress[key]?.inProgress && !chapterProgress[key]?.completed) {
+      return chapters[key];
+    }
+  }
+
+  // If no in-progress chapter, find first incomplete chapter
   for (const key of chapterKeys) {
     if (!chapterProgress[key] || !chapterProgress[key].completed) {
       return chapters[key];

@@ -102,27 +102,63 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     // Find next chapter to study
     let targetChapter = null;
+
+    // First, look for a chapter marked as "in progress"
     for (const key of chapterKeys) {
-      if (!chapterProgress[key] || !chapterProgress[key].completed) {
+      if (chapterProgress[key]?.inProgress && !chapterProgress[key]?.completed) {
         targetChapter = chapters[key];
+        console.log(`📖 Resuming in-progress chapter: ${key}`);
         break;
+      }
+    }
+
+    // If no in-progress chapter, find first incomplete chapter
+    if (!targetChapter) {
+      for (const key of chapterKeys) {
+        if (!chapterProgress[key] || !chapterProgress[key].completed) {
+          targetChapter = chapters[key];
+          console.log(`📘 Starting new chapter: ${key}`);
+          break;
+        }
       }
     }
 
     // If all complete, start from beginning
     if (!targetChapter && chapterKeys.length > 0) {
       targetChapter = chapters[chapterKeys[0]];
+      console.log(`🔄 All chapters complete, restarting from beginning`);
     }
 
     if (targetChapter) {
       console.log(`📚 Loading chapter: Book ${targetChapter.book}, Chapter ${targetChapter.chapter}`);
       setCurrentChapter(targetChapter);
       // Shuffle cards within chapter
-      setChapterCards(targetChapter.cards.sort(() => Math.random() - 0.5));
+      const shuffledCards = targetChapter.cards.sort(() => Math.random() - 0.5);
+      setChapterCards(shuffledCards);
       setCurrentIndex(0);
       setChapterStats({ correct: 0, total: 0 });
+
+      // Mark this chapter as the current one in progress
+      const chapterKey = `${targetChapter.book}_${targetChapter.chapter}`;
+      const updated = {
+        ...chapterProgress,
+        [chapterKey]: {
+          ...(chapterProgress[chapterKey] || {}),
+          inProgress: true,
+          lastAccessed: new Date().toISOString()
+        }
+      };
+      setChapterProgress(updated);
+      localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify(updated));
+
+      // Sync to cloud immediately
+      if (user) {
+        const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
+        const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+        progressSyncService.saveProgressToCloud(user.id, stats, updated, reviewData);
+      }
     }
-  }, [data, chapterProgress, isLoading, currentChapter]);
+  }, [data, chapterProgress, isLoading, currentChapter, user]);
 
   // Generate multiple choice options
   useEffect(() => {
@@ -222,6 +258,7 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
         ...chapterProgress,
         [chapterKey]: {
           completed: true,
+          inProgress: false, // Remove in-progress flag
           accuracy: Math.round(accuracy),
           lastStudied: new Date().toISOString(),
           attempts: (chapterProgress[chapterKey]?.attempts || 0) + 1
@@ -290,12 +327,34 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     if (nextChapter) {
       setCurrentChapter(nextChapter);
-      setChapterCards(nextChapter.cards.sort(() => Math.random() - 0.5));
+      const shuffledCards = nextChapter.cards.sort(() => Math.random() - 0.5);
+      setChapterCards(shuffledCards);
       setCurrentIndex(0);
       setChapterStats({ correct: 0, total: 0 });
       setShowAnswer(false);
       setUserAnswer({ pinyin: '', english: '' });
       setSelectedOption(null);
+
+      // Mark this new chapter as in progress
+      const nextChapterKey = `${nextChapter.book}_${nextChapter.chapter}`;
+      const finalProgress = {
+        ...updatedProgress,
+        [nextChapterKey]: {
+          ...(updatedProgress[nextChapterKey] || {}),
+          inProgress: true,
+          lastAccessed: new Date().toISOString()
+        }
+      };
+
+      setChapterProgress(finalProgress);
+      localStorage.setItem('tcFlashcardsChapterProgress', JSON.stringify(finalProgress));
+
+      // Sync to cloud
+      if (user) {
+        const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
+        const reviewData = JSON.parse(localStorage.getItem('tcFlashcardsReviewData') || '{}');
+        progressSyncService.saveProgressToCloud(user.id, stats, finalProgress, reviewData);
+      }
     }
   };
 
