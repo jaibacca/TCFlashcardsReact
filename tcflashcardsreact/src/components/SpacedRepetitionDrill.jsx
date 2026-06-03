@@ -67,6 +67,13 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     if (!data || data.length === 0) return;
     if (queueInitialized.current) return; // Already built, don't rebuild
 
+    // Wait for cardReviewData to load from localStorage
+    // Check if we have any review data at all
+    if (Object.keys(cardReviewData).length === 0) {
+      console.log('⏳ Waiting for review data to load...');
+      return;
+    }
+
     const now = new Date();
     const dueCards = [];
     const notDueCards = []; // All reviewed cards that aren't due yet
