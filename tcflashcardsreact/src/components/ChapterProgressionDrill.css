@@ -270,6 +270,14 @@
     border-color: #FF5722;
     color: white;
   }
+
+  .option-pinyin {
+    color: white;
+  }
+
+  .option-english {
+    color: white;
+  }
 }
 
 .answer-reveal {
