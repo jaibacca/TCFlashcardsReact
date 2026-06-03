@@ -204,7 +204,7 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
 
         {/* Summary Stats */}
         <div className="summary-stats">
-        <div className="summary-card">
+        <div className="summary-card total-cards">
           <div className="summary-value">{summaryStats.total}</div>
           <div className="summary-label">Total Cards</div>
         </div>
@@ -220,7 +220,7 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
           <div className="summary-value"><span>🆕</span><span>{summaryStats.newCards}</span></div>
           <div className="summary-label">New</div>
         </div>
-        <div className="summary-card">
+        <div className="summary-card avg-accuracy">
           <div className="summary-value">{Math.round(summaryStats.avgAccuracy)}%</div>
           <div className="summary-label">Avg Accuracy</div>
         </div>

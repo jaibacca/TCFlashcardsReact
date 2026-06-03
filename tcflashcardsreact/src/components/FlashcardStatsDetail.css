@@ -86,12 +86,16 @@
 }
 
 .summary-card {
-  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
-  color: white;
   padding: 16px;
   border-radius: 12px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card.total-cards,
+.summary-card.avg-accuracy {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  color: white;
 }
 
 .summary-card.mastered {
@@ -118,9 +122,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: white;
+  color: white !important;
 }
 
+.summary-card .summary-label,
 .summary-label {
   font-size: 13px;
   text-transform: uppercase;
@@ -497,7 +502,12 @@
     color: #e0e0e0;
   }
 
+  .summary-card .summary-label,
   .summary-label {
+    color: white !important;
+  }
+
+  .summary-value {
     color: white !important;
   }
 
