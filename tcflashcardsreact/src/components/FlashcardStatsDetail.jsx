@@ -209,15 +209,15 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
           <div className="summary-label">Total Cards</div>
         </div>
         <div className="summary-card mastered">
-          <div className="summary-value">🏆 {summaryStats.mastered}</div>
+          <div className="summary-value"><span>🏆</span><span>{summaryStats.mastered}</span></div>
           <div className="summary-label">Mastered</div>
         </div>
         <div className="summary-card learning">
-          <div className="summary-value">📚 {summaryStats.learning}</div>
+          <div className="summary-value"><span>📚</span><span>{summaryStats.learning}</span></div>
           <div className="summary-label">Learning</div>
         </div>
         <div className="summary-card new">
-          <div className="summary-value">🆕 {summaryStats.newCards}</div>
+          <div className="summary-value"><span>🆕</span><span>{summaryStats.newCards}</span></div>
           <div className="summary-label">New</div>
         </div>
         <div className="summary-card">

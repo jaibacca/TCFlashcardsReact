@@ -117,11 +117,11 @@
 
 .book-name {
   font-weight: bold;
-  color: #333;
+  color: #1a1a1a;
 }
 
 .item-count {
-  color: #666;
+  color: #555;
   font-size: 14px;
   margin-left: auto;
 }
@@ -140,7 +140,7 @@
 }
 
 .chapter-label span:first-of-type {
-  color: #555;
+  color: #333;
 }
 
 .books-list::-webkit-scrollbar {

@@ -34,7 +34,7 @@
   padding: 15px;
   font-size: 16px;
   font-weight: bold;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4c63d2 0%, #5c3a7e 100%);
   color: white;
   border: none;
   border-radius: 6px;
@@ -44,7 +44,7 @@
 
 .sign-in-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(76, 99, 210, 0.4);
 }
 
 .sign-out-btn {
@@ -64,7 +64,7 @@
 
 .auth-hint {
   text-align: center;
-  color: #666;
+  color: #555;
   font-size: 14px;
   margin-top: 10px;
   margin-bottom: 0;
@@ -83,7 +83,7 @@
 
 .auth-description {
   text-align: center;
-  color: #666;
+  color: #555;
   font-size: 14px;
   margin-bottom: 20px;
 }
@@ -140,8 +140,8 @@
   padding: 12px 20px;
   font-size: 16px;
   background: white;
-  color: #666;
-  border: 2px solid #ddd;
+  color: #333;
+  border: 2px solid #999;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s;

@@ -25,7 +25,7 @@
 
 .view-details-btn {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4c63d2 0%, #5c3a7e 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -33,12 +33,12 @@
   font-size: 14px;
   font-weight: 600;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(76, 99, 210, 0.3);
 }
 
 .view-details-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(76, 99, 210, 0.4);
 }
 
 .clear-stats-btn {
@@ -57,7 +57,7 @@
 }
 
 .migration-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4c63d2 0%, #5c3a7e 100%);
   color: white;
   padding: 20px;
   border-radius: 10px;
@@ -83,17 +83,19 @@
 .migration-text h3 {
   margin: 0 0 8px 0;
   font-size: 20px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .migration-text p {
   margin: 4px 0;
   font-size: 14px;
-  opacity: 0.95;
+  opacity: 1;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .migration-hint {
   font-size: 12px !important;
-  opacity: 0.8 !important;
+  opacity: 0.95 !important;
   font-style: italic;
 }
 
@@ -124,7 +126,7 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4c63d2 0%, #5c3a7e 100%);
   color: white !important;
   padding: 20px;
   border-radius: 10px;
@@ -133,7 +135,7 @@
 }
 
 .stat-card.highlight {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
   transform: scale(1.05);
 }
 
@@ -142,12 +144,14 @@
   font-weight: bold;
   margin-bottom: 8px;
   color: white !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .stat-label {
   font-size: 14px;
   color: white !important;
   opacity: 1;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .streak-section {
@@ -155,7 +159,7 @@
 }
 
 .streak-card {
-  background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+  background: linear-gradient(135deg, #e65100 0%, #d84315 100%);
   color: white;
   padding: 20px;
   border-radius: 10px;
@@ -177,11 +181,13 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .streak-longest {
   font-size: 14px;
-  opacity: 0.9;
+  opacity: 1;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .drills-stats {
@@ -225,11 +231,11 @@
 }
 
 .drill-stat-row span {
-  color: #666;
+  color: #555;
 }
 
 .drill-stat-row strong {
-  color: #333;
+  color: #1a1a1a;
 }
 
 .drill-stat-row strong.good {
@@ -304,7 +310,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #666;
+  color: #555;
 }
 
 .legend-color {
