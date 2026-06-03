@@ -178,13 +178,15 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
 
     // Sync to cloud if user is logged in
     if (user) {
+      const stats = JSON.parse(localStorage.getItem('tcFlashcardsStats') || '{}');
       const chapterProgress = JSON.parse(localStorage.getItem('tcFlashcardsChapterProgress') || '{}');
-      progressSyncService.saveProgressToCloud(user.id, updatedStats, chapterProgress, updated);
+      progressSyncService.saveProgressToCloud(user.id, stats, chapterProgress, updated);
     }
   }, [cardReviewData, user]);
 
   const [isCorrect, setIsCorrect] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [currentCardData, setCurrentCardData] = useState(null);
   const [pendingQuality, setPendingQuality] = useState(null);
 
   const handleCheckAnswer = () => {
@@ -205,16 +207,16 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     setFeedback(correct ? '✅ Correct!' : '❌ Incorrect');
     setShowAnswer(true);
 
-    // Store quality for later, don't update stats yet
+    // Store the current card and quality for later
+    setCurrentCardData(currentCard);
     const quality = correct ? 3 : 1;
     setPendingQuality(quality);
   };
 
   const handleNextCard = () => {
-    // Now save the review data and update stats
-    if (pendingQuality !== null) {
-      const currentCard = reviewQueue[currentIndex];
-      saveReviewData(currentCard, pendingQuality);
+    // Save the review data using the stored card data
+    if (pendingQuality !== null && currentCardData) {
+      saveReviewData(currentCardData, pendingQuality);
 
       // Update session stats
       setSessionStats(prev => ({
@@ -225,14 +227,18 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
       }));
     }
 
-    // Reset for next card
+    // Move to next card first
+    const nextIndex = currentIndex + 1;
+    setCurrentIndex(nextIndex);
+
+    // Then reset all states
     setShowAnswer(false);
     setUserAnswer({ pinyin: '', english: '' });
     setSelectedOption(null);
     setIsCorrect(null);
     setFeedback('');
+    setCurrentCardData(null);
     setPendingQuality(null);
-    setCurrentIndex(prev => prev + 1);
   };
 
   const handleOptionSelect = (option) => {
