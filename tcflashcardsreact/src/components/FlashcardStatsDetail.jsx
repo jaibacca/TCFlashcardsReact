@@ -5,7 +5,6 @@ import './FlashcardStatsDetail.css';
 const FlashcardStatsDetail = ({ allData, onClose }) => {
   const [sortBy, setSortBy] = useState('order'); // order, accuracy, attempts, lastReviewed, mastery
   const [sortOrder, setSortOrder] = useState('asc'); // asc, desc
-  const [filterMastery, setFilterMastery] = useState('all'); // all, mastered, learning, new
   const [filterBook, setFilterBook] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -17,7 +16,12 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
   // Get unique books
   const books = useMemo(() => {
     const bookSet = new Set(allData.map(card => card.Book));
-    return Array.from(bookSet).sort((a, b) => a - b);
+    const sortedBooks = Array.from(bookSet).sort((a, b) => {
+      // Convert to numbers for proper sorting
+      return Number(a) - Number(b);
+    });
+    console.log('Available books:', sortedBooks);
+    return sortedBooks;
   }, [allData]);
 
   // Calculate card stats
@@ -65,14 +69,16 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
       );
     }
 
-    // Apply mastery filter
-    if (filterMastery !== 'all') {
-      filtered = filtered.filter(card => card.masteryLevel === filterMastery);
-    }
-
     // Apply book filter
     if (filterBook !== 'all') {
-      filtered = filtered.filter(card => card.Book === parseInt(filterBook));
+      const bookNumber = parseInt(filterBook);
+      console.log('Filtering by book:', bookNumber);
+      console.log('Sample card Books before filter:', filtered.slice(0, 5).map(c => ({ Book: c.Book, type: typeof c.Book })));
+      filtered = filtered.filter(card => {
+        // Handle both string and number types
+        return Number(card.Book) === bookNumber;
+      });
+      console.log('Cards after book filter:', filtered.length);
     }
 
     // Sort cards - NEW CARDS ALWAYS GO TO BOTTOM
@@ -131,7 +137,7 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
     });
 
     return filtered;
-  }, [cardStats, sortBy, sortOrder, filterMastery, filterBook, searchTerm]);
+  }, [cardStats, sortBy, sortOrder, filterBook, searchTerm]);
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -229,16 +235,6 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
-
-        <div className="filter-group">
-          <label>Mastery Level:</label>
-          <select value={filterMastery} onChange={(e) => setFilterMastery(e.target.value)}>
-            <option value="all">All Cards</option>
-            <option value="mastered">🏆 Mastered</option>
-            <option value="learning">📚 Learning</option>
-            <option value="new">🆕 New</option>
-          </select>
         </div>
 
         <div className="filter-group">
