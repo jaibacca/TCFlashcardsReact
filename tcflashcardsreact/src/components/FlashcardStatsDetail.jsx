@@ -176,13 +176,14 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
 
   return (
     <div className="flashcard-stats-detail">
-      <div className="stats-detail-header">
-        <h2>📊 Detailed Flashcard Statistics</h2>
-        <button onClick={onClose} className="close-btn">✕</button>
-      </div>
+      <div className="modal-content-wrapper">
+        <div className="stats-detail-header">
+          <h2>📊 Detailed Flashcard Statistics</h2>
+          <button onClick={onClose} className="close-btn">✕</button>
+        </div>
 
-      {/* Summary Stats */}
-      <div className="summary-stats">
+        {/* Summary Stats */}
+        <div className="summary-stats">
         <div className="summary-card">
           <div className="summary-value">{summaryStats.total}</div>
           <div className="summary-label">Total Cards</div>
@@ -309,6 +310,7 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );
