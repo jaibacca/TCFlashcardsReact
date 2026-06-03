@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
 import { updateCardStats, getCardKey } from '../utils/statsUtils';
-import { speakChinese, preloadAudio } from '../utils/speechUtils';
 import './SpacedRepetitionDrill.css';
 
 // SM-2 Algorithm for Spaced Repetition (Anki method)
@@ -126,11 +125,6 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     console.log(`📋 Final queue size: ${limited.length} (${limited.filter(c => c.isMasteredReview).length} mastered)`);
     setReviewQueue(limited);
     setCurrentIndex(0);
-
-    // Preload audio for all cards in review queue
-    if (limited.length > 0) {
-      preloadAudio(limited);
-    }
   }, [data, cardReviewData]);
 
   // Generate multiple choice options
@@ -212,12 +206,6 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
 
   const handleCheckAnswer = () => {
     setShowAnswer(true);
-
-    // Pronounce the Hanzi character
-    if (currentIndex < reviewQueue.length) {
-      const currentCard = reviewQueue[currentIndex];
-      speakChinese(currentCard.Hanzi);
-    }
   };
 
   const handleOptionSelect = (option) => {

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { progressSyncService } from '../services/progressSync';
 import { updateCardStats } from '../utils/statsUtils';
-import { speakChinese, preloadAudio } from '../utils/speechUtils';
 import './ChapterProgressionDrill.css';
 
 const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
@@ -101,14 +100,11 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     if (targetChapter) {
       console.log(`📚 Loading chapter: Book ${targetChapter.book}, Chapter ${targetChapter.chapter}`);
-      const shuffledCards = targetChapter.cards.sort(() => Math.random() - 0.5);
       setCurrentChapter(targetChapter);
-      setChapterCards(shuffledCards);
+      // Shuffle cards within chapter
+      setChapterCards(targetChapter.cards.sort(() => Math.random() - 0.5));
       setCurrentIndex(0);
       setChapterStats({ correct: 0, total: 0 });
-
-      // Preload audio for all cards in this chapter
-      preloadAudio(shuffledCards);
     }
   }, [data, chapterProgress, isLoading, currentChapter]);
 
@@ -188,9 +184,6 @@ const ChapterProgressionDrill = ({ data, isMultipleChoice }) => {
 
     // Update unified card stats (also adds to review data automatically)
     updateCardStats(currentCard, isCorrect, 'chapterProgression');
-
-    // Pronounce the Hanzi character
-    speakChinese(currentCard.Hanzi);
   };
 
   const handleNext = () => {

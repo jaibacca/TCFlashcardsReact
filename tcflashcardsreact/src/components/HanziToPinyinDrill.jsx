@@ -1,7 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { generateMultipleChoiceOptions } from '../utils/csvParser';
 import { updateCardStats } from '../utils/statsUtils';
-import { speakChinese, preloadAudio } from '../utils/speechUtils';
 import './HanziToPinyinDrill.css';
 
 const HanziToPinyinDrill = ({ data, isMultipleChoice }) => {
@@ -12,13 +11,6 @@ const HanziToPinyinDrill = ({ data, isMultipleChoice }) => {
   const [selectedEnglish, setSelectedEnglish] = useState('');
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState({ correct: 0, total: 0 });
-
-  // Preload audio for all cards on mount
-  useEffect(() => {
-    if (data && data.length > 0) {
-      preloadAudio(data);
-    }
-  }, [data]);
 
   if (!data || data.length === 0) {
     return <div className="drill-container">No data available. Please load data first.</div>;
@@ -54,9 +46,6 @@ const HanziToPinyinDrill = ({ data, isMultipleChoice }) => {
 
     // Update statistics with unified card stats
     updateCardStats(currentCard, isCorrect, 'hanziToPinyin');
-
-    // Pronounce the Hanzi character
-    speakChinese(currentCard.Hanzi);
   };
 
   const nextCard = () => {
