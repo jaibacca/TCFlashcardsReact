@@ -164,6 +164,10 @@
     color: #e0e0e0;
   }
 
+  .score {
+    color: #ce93d8;
+  }
+
   .card-counter {
     color: #b0b0b0;
   }
@@ -175,6 +179,10 @@
 
   .question-section {
     border-bottom-color: #444;
+  }
+
+  .pinyin-display {
+    color: #ce93d8;
   }
 
   .english-hint {
@@ -193,6 +201,13 @@
 
   .option-btn.hanzi-btn:hover {
     background: #3a2a3a;
+    border-color: #7b1fa2;
+  }
+
+  .option-btn.hanzi-btn.selected {
+    background: #7b1fa2;
+    border-color: #7b1fa2;
+    color: white;
   }
 }
 

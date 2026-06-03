@@ -168,6 +168,10 @@
     color: #e0e0e0;
   }
 
+  .score {
+    color: #64b5f6;
+  }
+
   .card-counter {
     color: #b0b0b0;
   }
@@ -179,6 +183,10 @@
 
   .question-section {
     border-bottom-color: #444;
+  }
+
+  .pinyin-display {
+    color: #64b5f6;
   }
 
   .input-group label {
@@ -203,6 +211,12 @@
 
   .option-btn:hover {
     background: #1a2a3a;
+  }
+
+  .option-btn.selected {
+    background: #1565c0;
+    border-color: #1565c0;
+    color: white;
   }
 }
 

@@ -64,17 +64,20 @@
   font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  max-width: 100%;
+  line-height: 1.1;
+  font-size: clamp(32px, 10vw, 96px);
 }
 
 @media (max-width: 768px) {
   .hanzi-display {
-    font-size: 64px;
+    font-size: clamp(28px, 8vw, 64px);
   }
 }
 
 @media (max-width: 480px) {
   .hanzi-display {
-    font-size: 48px;
+    font-size: clamp(24px, 7vw, 48px);
   }
 }
 
@@ -168,6 +171,10 @@
     color: #e0e0e0;
   }
 
+  .score {
+    color: #8bc34a;
+  }
+
   .card-counter {
     color: #b0b0b0;
   }
@@ -179,6 +186,10 @@
 
   .question-section {
     border-bottom-color: #444;
+  }
+
+  .hanzi-display {
+    color: #e0e0e0;
   }
 
   .input-group label {

@@ -51,7 +51,7 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [options, setOptions] = useState([]);
   const [cardReviewData, setCardReviewData] = useState({});
-  const [sessionStats, setSessionStats] = useState({ reviewed: 0, correct: 0, again: 0, hard: 0, good: 0, easy: 0 });
+  const [sessionStats, setSessionStats] = useState({ reviewed: 0, correct: 0, again: 0, good: 0 });
 
   // Load review data from localStorage
   useEffect(() => {
@@ -183,29 +183,48 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
     }
   }, [cardReviewData, user]);
 
-  const handleRating = (quality) => {
-    if (currentIndex >= reviewQueue.length) return;
+  const [isCorrect, setIsCorrect] = useState(null);
+  const [feedback, setFeedback] = useState('');
 
+  const handleCheckAnswer = () => {
     const currentCard = reviewQueue[currentIndex];
+    let correct = false;
+
+    if (isMultipleChoice) {
+      correct = selectedOption && 
+                selectedOption.pinyin === currentCard.Pinyin && 
+                selectedOption.english === currentCard.English;
+    } else {
+      const pinyinMatch = userAnswer.pinyin.toLowerCase().trim() === currentCard.Pinyin.toLowerCase().trim();
+      const englishMatch = userAnswer.english.toLowerCase().trim() === currentCard.English.toLowerCase().trim();
+      correct = pinyinMatch && englishMatch;
+    }
+
+    setIsCorrect(correct);
+    setFeedback(correct ? '✅ Correct!' : '❌ Incorrect');
+    setShowAnswer(true);
+
+    // Automatically rate based on correctness
+    // Correct = quality 3 (good), Incorrect = quality 1 (again)
+    const quality = correct ? 3 : 1;
     saveReviewData(currentCard, quality);
 
     // Update session stats
-    const ratingMap = { 0: 'again', 1: 'again', 2: 'hard', 3: 'good', 4: 'easy', 5: 'easy' };
     setSessionStats(prev => ({
       reviewed: prev.reviewed + 1,
-      correct: quality >= 3 ? prev.correct + 1 : prev.correct,
-      [ratingMap[quality]]: prev[ratingMap[quality]] + 1
+      correct: correct ? prev.correct + 1 : prev.correct,
+      again: !correct ? prev.again + 1 : prev.again,
+      good: correct ? prev.good + 1 : prev.good
     }));
+  };
 
-    // Move to next card
+  const handleNextCard = () => {
     setShowAnswer(false);
     setUserAnswer({ pinyin: '', english: '' });
     setSelectedOption(null);
+    setIsCorrect(null);
+    setFeedback('');
     setCurrentIndex(prev => prev + 1);
-  };
-
-  const handleCheckAnswer = () => {
-    setShowAnswer(true);
   };
 
   const handleOptionSelect = (option) => {
@@ -240,12 +259,14 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
               <span className="summary-value">{Math.round((sessionStats.correct / sessionStats.reviewed) * 100)}%</span>
               <span className="summary-label">Accuracy</span>
             </div>
-          </div>
-          <div className="rating-breakdown">
-            <div className="rating-item again">Again: {sessionStats.again}</div>
-            <div className="rating-item hard">Hard: {sessionStats.hard}</div>
-            <div className="rating-item good">Good: {sessionStats.good}</div>
-            <div className="rating-item easy">Easy: {sessionStats.easy}</div>
+            <div className="summary-stat correct">
+              <span className="summary-value">{sessionStats.correct}</span>
+              <span className="summary-label">Correct</span>
+            </div>
+            <div className="summary-stat incorrect">
+              <span className="summary-value">{sessionStats.again}</span>
+              <span className="summary-label">Incorrect</span>
+            </div>
           </div>
         </div>
       </div>
@@ -336,34 +357,19 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
         )}
 
         {showAnswer && (
-          <div className="answer-reveal">
+          <div className={`answer-reveal ${isCorrect ? 'correct' : 'incorrect'}`}>
+            <div className="feedback-message">
+              <h3>{feedback}</h3>
+            </div>
+
             <div className="correct-answer">
-              <h3>Correct Answer:</h3>
               <p><strong>Pinyin:</strong> {currentCard.Pinyin}</p>
               <p><strong>English:</strong> {currentCard.English}</p>
             </div>
 
-            <div className="rating-section">
-              <h3>How well did you know this?</h3>
-              <div className="rating-buttons">
-                <button className="rating-btn again" onClick={() => handleRating(1)}>
-                  <span className="rating-label">Again</span>
-                  <span className="rating-time">&lt;1m</span>
-                </button>
-                <button className="rating-btn hard" onClick={() => handleRating(2)}>
-                  <span className="rating-label">Hard</span>
-                  <span className="rating-time">6m</span>
-                </button>
-                <button className="rating-btn good" onClick={() => handleRating(3)}>
-                  <span className="rating-label">Good</span>
-                  <span className="rating-time">1d</span>
-                </button>
-                <button className="rating-btn easy" onClick={() => handleRating(4)}>
-                  <span className="rating-label">Easy</span>
-                  <span className="rating-time">4d</span>
-                </button>
-              </div>
-            </div>
+            <button className="next-btn" onClick={handleNextCard}>
+              Next Card →
+            </button>
           </div>
         )}
       </div>

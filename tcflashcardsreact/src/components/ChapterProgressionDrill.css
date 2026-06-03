@@ -81,17 +81,22 @@
   font-weight: bold;
   color: #FF5722;
   font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  line-height: 1.1;
+  font-size: clamp(32px, 10vw, 96px);
 }
 
 @media (max-width: 768px) {
   .hanzi-display {
-    font-size: 64px;
+    font-size: clamp(28px, 8vw, 64px);
   }
 }
 
 @media (max-width: 480px) {
   .hanzi-display {
-    font-size: 48px;
+    font-size: clamp(24px, 7vw, 48px);
   }
 }
 
@@ -210,8 +215,16 @@
     color: #e0e0e0;
   }
 
+  .chapter-title {
+    color: #ff8a65;
+  }
+
   .stat-label {
     color: #b0b0b0;
+  }
+
+  .stat-value {
+    color: #ff8a65;
   }
 
   .flashcard {
@@ -221,6 +234,10 @@
 
   .question-section {
     border-bottom-color: #444;
+  }
+
+  .hanzi-display {
+    color: #ff8a65;
   }
 
   .input-group label {
