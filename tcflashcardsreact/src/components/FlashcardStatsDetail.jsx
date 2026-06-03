@@ -75,8 +75,22 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
       filtered = filtered.filter(card => card.Book === parseInt(filterBook));
     }
 
-    // Sort cards
+    // Sort cards - NEW CARDS ALWAYS GO TO BOTTOM
     filtered.sort((a, b) => {
+      // First priority: Cards with attempts come before cards without attempts
+      const aHasAttempts = a.attempts > 0;
+      const bHasAttempts = b.attempts > 0;
+
+      if (aHasAttempts !== bHasAttempts) {
+        return bHasAttempts ? 1 : -1; // Cards with attempts come first
+      }
+
+      // If both have no attempts, sort by order
+      if (!aHasAttempts && !bHasAttempts) {
+        return (a.Order || 0) - (b.Order || 0);
+      }
+
+      // Both have attempts - sort by selected column
       let compareValue = 0;
 
       switch (sortBy) {
