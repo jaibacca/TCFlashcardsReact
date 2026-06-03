@@ -158,6 +158,54 @@
   cursor: not-allowed;
 }
 
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .drill-container {
+    color: #e0e0e0;
+  }
+
+  .drill-header h2 {
+    color: #e0e0e0;
+  }
+
+  .card-counter {
+    color: #b0b0b0;
+  }
+
+  .flashcard {
+    background: #1e1e1e;
+    color: #e0e0e0;
+  }
+
+  .question-section {
+    border-bottom-color: #444;
+  }
+
+  .input-group label {
+    color: #e0e0e0;
+  }
+
+  .input-group input {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #555;
+  }
+
+  .input-group input::placeholder {
+    color: #999;
+  }
+
+  .option-btn {
+    background: #2a2a2a;
+    border-color: #555;
+    color: #e0e0e0;
+  }
+
+  .option-btn:hover {
+    background: #1a2a3a;
+  }
+}
+
 .answer-reveal {
   text-align: center;
 }

@@ -160,3 +160,91 @@
 .books-list::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .data-selector {
+    background: #1e1e1e;
+    color: #e0e0e0;
+  }
+
+  .selector-header h3 {
+    color: #e0e0e0;
+  }
+
+  .selector-actions button {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .selector-actions button:hover {
+    background: #333;
+  }
+
+  .select-btn:hover {
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+  }
+
+  .deselect-btn:hover {
+    background: #f44336;
+    color: white;
+    border-color: #f44336;
+  }
+
+  .selected-count {
+    background: #1a3a52;
+    color: #64b5f6;
+  }
+
+  .books-list {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+
+  .book-item {
+    border-bottom-color: #444;
+  }
+
+  .expand-btn {
+    color: #999;
+  }
+
+  .expand-btn:hover {
+    color: #e0e0e0;
+  }
+
+  .checkbox-label:hover {
+    background: #333;
+  }
+
+  .book-name {
+    color: #e0e0e0;
+  }
+
+  .item-count {
+    color: #999;
+  }
+
+  .chapter-label span:first-of-type {
+    color: #b0b0b0;
+  }
+
+  .chapters-list {
+    border-left-color: #444;
+  }
+
+  .books-list::-webkit-scrollbar-track {
+    background: #2a2a2a;
+  }
+
+  .books-list::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  .books-list::-webkit-scrollbar-thumb:hover {
+    background: #777;
+  }
+}

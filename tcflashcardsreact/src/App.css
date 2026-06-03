@@ -419,3 +419,41 @@ body {
     border-right-color: var(--border);
   }
 }
+
+/* Dark Mode Support for Flashcard App */
+@media (prefers-color-scheme: dark) {
+  .data-upload-section,
+  .options-section,
+  .drills-section {
+    background: #1e1e1e;
+    color: #e0e0e0;
+  }
+
+  .data-upload-section h2,
+  .drills-section h2 {
+    color: #e0e0e0;
+  }
+
+  .upload-area {
+    background: #2a2a2a;
+    border-color: #555;
+  }
+
+  .upload-hint {
+    color: #b0b0b0;
+  }
+
+  .data-info {
+    background: #1a3a2a;
+    color: #8bc34a;
+  }
+
+  .toggle-label {
+    color: #e0e0e0;
+  }
+
+  .drills-section.featured-drills {
+    background: linear-gradient(135deg, #1a1a2a 0%, #2a1a2a 100%);
+    border-color: #4c63d2;
+  }
+}

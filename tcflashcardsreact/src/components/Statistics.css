@@ -378,3 +378,41 @@
     width: 100%;
   }
 }
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .statistics-container {
+    background: #1e1e1e;
+    color: #e0e0e0;
+  }
+
+  .stats-header h2 {
+    color: #e0e0e0;
+  }
+
+  .drill-stat-card {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+
+  .drill-stat-card h4 {
+    color: #e0e0e0;
+  }
+
+  .drill-stat-row span {
+    color: #b0b0b0;
+  }
+
+  .drill-stat-row strong {
+    color: #e0e0e0;
+  }
+
+  .card-progress-section h3,
+  .drills-stats h3 {
+    color: #e0e0e0;
+  }
+
+  .legend-item {
+    color: #b0b0b0;
+  }
+}

@@ -62,3 +62,20 @@
 .stroke-controls .submit-btn:hover:not(:disabled) {
   background: #45a049;
 }
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .canvas-wrapper {
+    background: #2a2a2a;
+    border-color: #555;
+  }
+
+  .stroke-controls button {
+    background: #333;
+    color: #e0e0e0;
+  }
+
+  .stroke-controls button:hover:not(:disabled) {
+    background: #444;
+  }
+}

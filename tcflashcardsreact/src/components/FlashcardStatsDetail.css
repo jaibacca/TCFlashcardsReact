@@ -455,6 +455,102 @@
   }
 }
 
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .flashcard-stats-detail {
+    background: rgba(0, 0, 0, 0.9);
+  }
+
+  .modal-content-wrapper {
+    background: #1e1e1e;
+    color: #e0e0e0;
+  }
+
+  .summary-stats {
+    background: #2a2a2a;
+  }
+
+  .summary-card {
+    background: #333;
+    color: #e0e0e0;
+  }
+
+  .filters-section {
+    background: #2a2a2a;
+    border-bottom-color: #444;
+  }
+
+  .search-box input {
+    background: #333;
+    color: #e0e0e0;
+    border-color: #555;
+  }
+
+  .search-box input::placeholder {
+    color: #999;
+  }
+
+  .filter-group label {
+    color: #e0e0e0;
+  }
+
+  .filter-group select {
+    background: #333;
+    color: #e0e0e0;
+    border-color: #555;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e0e0e0' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  }
+
+  .cards-table {
+    color: #e0e0e0;
+  }
+
+  .cards-table thead {
+    background: #2a2a2a;
+  }
+
+  .cards-table th {
+    color: #e0e0e0;
+    border-bottom-color: #444;
+  }
+
+  .cards-table th.sortable:hover {
+    background: #333;
+  }
+
+  .cards-table td {
+    border-bottom-color: #333;
+  }
+
+  .cards-table tbody tr:hover {
+    background: #2a2a2a;
+  }
+
+  .hanzi-cell {
+    color: #e0e0e0;
+  }
+
+  .english-cell {
+    color: #b0b0b0;
+  }
+
+  .chapter-cell {
+    color: #999;
+  }
+
+  .date-cell {
+    color: #999;
+  }
+
+  .not-attempted {
+    color: #666;
+  }
+
+  .no-results {
+    color: #888;
+  }
+}
+
 /* Scrollbar styling */
 .cards-table-container::-webkit-scrollbar {
   width: 8px;
