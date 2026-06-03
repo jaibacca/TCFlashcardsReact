@@ -65,9 +65,13 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
   useEffect(() => {
     if (!data || data.length === 0) return;
 
+    // Only build queue once on mount, not when cardReviewData changes
+    if (reviewQueue.length > 0) return;
+
     const now = new Date();
     const dueQueue = [];
     const masteredCards = [];
+    const allReviewedCards = [];
 
     console.log('🔍 SpacedRepetition: Building review queue...');
     console.log(`📊 Total cards in database: ${data.length}`);
@@ -90,42 +94,57 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
           if (reviewData.interval >= 21) {
             masteredCards.push({ ...card, reviewData });
           }
-          console.log(`⏰ Card not due yet: ${cardKey}, next review: ${reviewData.nextReviewDate}, interval: ${reviewData.interval} days`);
         }
+
+        allReviewedCards.push({ ...card, reviewData });
       }
     });
 
     console.log(`🎯 Cards due for review: ${dueQueue.length}`);
     console.log(`🏆 Mastered cards available: ${masteredCards.length}`);
+    console.log(`📝 Total reviewed cards: ${allReviewedCards.length}`);
 
     // Shuffle due cards
-    const shuffledDue = dueQueue.sort(() => Math.random() - 0.5);
+    let finalQueue = dueQueue.sort(() => Math.random() - 0.5);
 
-    // Add 2-3 random mastered cards for long-term retention check (if available)
-    let finalQueue = shuffledDue;
-    if (masteredCards.length > 0 && shuffledDue.length < 20) {
-      const numMasteredToAdd = Math.min(
-        3, // Add up to 3 mastered cards
-        masteredCards.length,
-        20 - shuffledDue.length // Don't exceed 20 total
-      );
+    // Always try to get to 20 cards
+    const cardsNeeded = 20 - finalQueue.length;
 
-      const randomMastered = masteredCards
-        .sort(() => Math.random() - 0.5)
-        .slice(0, numMasteredToAdd)
-        .map(card => ({ ...card, isMasteredReview: true })); // Flag as mastered review
+    if (cardsNeeded > 0) {
+      // First, try to add mastered cards
+      if (masteredCards.length > 0) {
+        const masteredToAdd = Math.min(cardsNeeded, masteredCards.length);
+        const randomMastered = masteredCards
+          .sort(() => Math.random() - 0.5)
+          .slice(0, masteredToAdd)
+          .map(card => ({ ...card, isMasteredReview: true }));
 
-      finalQueue = [...shuffledDue, ...randomMastered];
-      console.log(`✨ Added ${numMasteredToAdd} mastered cards for long-term retention check`);
+        finalQueue = [...finalQueue, ...randomMastered];
+        console.log(`✨ Added ${masteredToAdd} mastered cards for long-term retention`);
+      }
+
+      // If still need more, add any reviewed cards not due yet
+      const stillNeeded = 20 - finalQueue.length;
+      if (stillNeeded > 0 && allReviewedCards.length > finalQueue.length) {
+        const otherCards = allReviewedCards
+          .filter(c => !finalQueue.some(fc => fc.Hanzi === c.Hanzi))
+          .sort(() => Math.random() - 0.5)
+          .slice(0, stillNeeded)
+          .map(card => ({ ...card, isExtraReview: true }));
+
+        finalQueue = [...finalQueue, ...otherCards];
+        console.log(`📚 Added ${otherCards.length} additional review cards to reach 20`);
+      }
     }
 
-    // Limit to 20 cards total
-    const limited = finalQueue.slice(0, 20);
+    console.log(`📋 Final queue size: ${finalQueue.length}`);
+    console.log(`   - Due: ${finalQueue.filter(c => !c.isMasteredReview && !c.isExtraReview).length}`);
+    console.log(`   - Mastered: ${finalQueue.filter(c => c.isMasteredReview).length}`);
+    console.log(`   - Extra: ${finalQueue.filter(c => c.isExtraReview).length}`);
 
-    console.log(`📋 Final queue size: ${limited.length} (${limited.filter(c => c.isMasteredReview).length} mastered)`);
-    setReviewQueue(limited);
+    setReviewQueue(finalQueue);
     setCurrentIndex(0);
-  }, [data, cardReviewData]);
+  }, [data]); // Only depend on data, not cardReviewData
 
   // Generate multiple choice options
   useEffect(() => {
@@ -307,8 +326,11 @@ const SpacedRepetitionDrill = ({ data, isMultipleChoice }) => {
         {currentCard.isMasteredReview && (
           <span className="mastered-badge">🏆 Long-term Check</span>
         )}
+        {currentCard.isExtraReview && (
+          <span className="review-count">📚 Bonus Review</span>
+        )}
         {currentCard.isNew && <span className="new-badge">NEW</span>}
-        {currentCard.reviewData && (
+        {currentCard.reviewData && !currentCard.isMasteredReview && !currentCard.isExtraReview && (
           <span className="review-count">Review #{currentCard.reviewData.reviews + 1}</span>
         )}
       </div>
