@@ -54,16 +54,28 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('user_progress')
-        .select('card_key')
+        .select('stats_data')
         .eq('user_id', userId)
-        .limit(1);
+        .single();
 
       if (error) {
+        // PGRST116 = no rows, means new user
+        if (error.code === 'PGRST116') {
+          return false;
+        }
         console.error('Error checking cloud data:', error);
         return true; // Assume they have data to be safe
       }
 
-      return data && data.length > 0;
+      // Check if stats_data has any meaningful content
+      const hasData = data && 
+        data.stats_data && 
+        (Object.keys(data.stats_data).length > 0 ||
+         data.stats_data.reviewData ||
+         data.stats_data.cardHistory ||
+         data.stats_data.chapterProgress);
+
+      return hasData;
     } catch (error) {
       console.error('Error checking cloud data:', error);
       return true; // Assume they have data to be safe

@@ -240,6 +240,7 @@ export const progressSyncService = {
 /**
  * Simplified sync function for migration
  * Takes review data and syncs it to cloud for a specific user
+ * Works with the single-row JSONB schema (one row per user)
  */
 export const syncToCloud = async (userId, reviewData) => {
   try {
@@ -247,29 +248,43 @@ export const syncToCloud = async (userId, reviewData) => {
       throw new Error('userId and reviewData are required');
     }
 
-    // Convert review data to progress records
-    const progressRecords = Object.entries(reviewData).map(([cardKey, data]) => ({
-      user_id: userId,
-      card_key: cardKey,
-      interval: data.interval || 1,
-      ease_factor: data.easeFactor || 2.5,
-      next_review: data.nextReview || new Date().toISOString(),
-      last_review: data.lastReview || data.lastReviewed || new Date().toISOString(),
-      review_count: data.attempts || 0,
-      correct_count: data.correctCount || 0,
-    }));
+    // Get existing progress from cloud
+    const { data: existing, error: fetchError } = await supabase
+      .from('user_progress')
+      .select('stats_data')
+      .eq('user_id', userId)
+      .single();
 
-    // Batch upsert to user_progress table
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      // PGRST116 = no rows found, which is OK for new users
+      throw fetchError;
+    }
+
+    // Merge new review data with existing data
+    const existingData = existing?.stats_data || {};
+    const mergedData = {
+      ...existingData,
+      reviewData: {
+        ...(existingData.reviewData || {}),
+        ...reviewData
+      }
+    };
+
+    // Upsert to user_progress table (single row per user)
     const { error } = await supabase
       .from('user_progress')
-      .upsert(progressRecords, {
-        onConflict: 'user_id,card_key'
+      .upsert({
+        user_id: userId,
+        stats_data: mergedData,
+        last_synced: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
       });
 
     if (error) throw error;
 
-    console.log(`✅ Synced ${progressRecords.length} cards to cloud`);
-    return { success: true, count: progressRecords.length };
+    console.log(`✅ Synced ${Object.keys(reviewData).length} cards to cloud`);
+    return { success: true, count: Object.keys(reviewData).length };
   } catch (error) {
     console.error('❌ Failed to sync to cloud:', error);
     throw error;
