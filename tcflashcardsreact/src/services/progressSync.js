@@ -236,3 +236,42 @@ export const progressSyncService = {
     }
   }
 };
+
+/**
+ * Simplified sync function for migration
+ * Takes review data and syncs it to cloud for a specific user
+ */
+export const syncToCloud = async (userId, reviewData) => {
+  try {
+    if (!userId || !reviewData) {
+      throw new Error('userId and reviewData are required');
+    }
+
+    // Convert review data to progress records
+    const progressRecords = Object.entries(reviewData).map(([cardKey, data]) => ({
+      user_id: userId,
+      card_key: cardKey,
+      interval: data.interval || 1,
+      ease_factor: data.easeFactor || 2.5,
+      next_review: data.nextReview || new Date().toISOString(),
+      last_review: data.lastReview || data.lastReviewed || new Date().toISOString(),
+      review_count: data.attempts || 0,
+      correct_count: data.correctCount || 0,
+    }));
+
+    // Batch upsert to user_progress table
+    const { error } = await supabase
+      .from('user_progress')
+      .upsert(progressRecords, {
+        onConflict: 'user_id,card_key'
+      });
+
+    if (error) throw error;
+
+    console.log(`✅ Synced ${progressRecords.length} cards to cloud`);
+    return { success: true, count: progressRecords.length };
+  } catch (error) {
+    console.error('❌ Failed to sync to cloud:', error);
+    throw error;
+  }
+};
