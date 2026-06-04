@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { getCardKey } from '../utils/statsUtils';
 import './FlashcardStatsDetail.css';
 
@@ -7,6 +7,25 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
   const [sortOrder, setSortOrder] = useState('asc'); // asc, desc
   const [filterBook, setFilterBook] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Handle Esc key press
+  useEffect(() => {
+    const handleEscKey = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => document.removeEventListener('keydown', handleEscKey);
+  }, [onClose]);
+
+  // Handle click outside modal
+  const handleBackdropClick = (e) => {
+    if (e.target.className === 'flashcard-stats-detail') {
+      onClose();
+    }
+  };
 
   // Load card stats from localStorage
   const savedStats = localStorage.getItem('tcFlashcardsStats');
@@ -146,8 +165,11 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
     const learning = filteredAndSortedCards.filter(c => c.masteryLevel === 'learning').length;
     const newCards = filteredAndSortedCards.filter(c => c.masteryLevel === 'new').length;
     const totalAttempts = filteredAndSortedCards.reduce((sum, c) => sum + c.attempts, 0);
-    const avgAccuracy = total > 0
-      ? filteredAndSortedCards.reduce((sum, c) => sum + c.accuracy, 0) / total
+
+    // Only calculate average accuracy for cards that have been attempted
+    const attemptedCards = filteredAndSortedCards.filter(c => c.attempts > 0);
+    const avgAccuracy = attemptedCards.length > 0
+      ? attemptedCards.reduce((sum, c) => sum + c.accuracy, 0) / attemptedCards.length
       : 0;
 
     return { total, mastered, learning, newCards, totalAttempts, avgAccuracy };
@@ -195,7 +217,7 @@ const FlashcardStatsDetail = ({ allData, onClose }) => {
   };
 
   return (
-    <div className="flashcard-stats-detail">
+    <div className="flashcard-stats-detail" onClick={handleBackdropClick}>
       <div className="modal-content-wrapper">
         <div className="stats-detail-header">
           <h2>📊 Detailed Flashcard Statistics</h2>

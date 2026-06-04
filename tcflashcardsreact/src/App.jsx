@@ -138,13 +138,10 @@ function App() {
             <div style={{ color: 'red', padding: '20px', textAlign: 'center', fontSize: '18px' }}>
               ❌ {error}
               <br /><br />
-              <button onClick={() => window.location.reload()} className="file-upload-label" style={{ fontSize: '16px' }}>
-                🔄 Retry Connection
-              </button>
+              <p style={{ color: '#666', fontSize: '14px' }}>
+                Check browser console for detailed error information.
+              </p>
             </div>
-            <p style={{ marginTop: '20px', color: '#666', textAlign: 'center' }}>
-              Please check your internet connection and refresh the page.
-            </p>
           </div>
         </main>
       </div>

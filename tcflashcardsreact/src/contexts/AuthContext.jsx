@@ -48,10 +48,15 @@ export const AuthProvider = ({ children }) => {
       // Record this attempt
       localStorage.setItem('lastAuthAttempt', Date.now().toString());
 
+      // Use environment variable for redirect URL, fallback to current origin
+      const redirectUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      console.log('🔗 Auth redirect URL:', redirectUrl);
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: redirectUrl,
+          shouldCreateUser: true,
         }
       });
       if (error) throw error;

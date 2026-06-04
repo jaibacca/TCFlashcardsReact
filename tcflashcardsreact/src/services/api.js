@@ -4,6 +4,7 @@ import { supabase } from '../config/supabase';
 export const flashcardsApi = {
   // Get all flashcards
   getAll: async () => {
+    console.log('🔍 Attempting to fetch flashcards from Supabase...');
     const { data, error } = await supabase
       .from('flashcards')
       .select('*')
@@ -11,7 +12,12 @@ export const flashcardsApi = {
       .order('chapter', { ascending: true })
       .order('id', { ascending: true }); // Use id as fallback for ordering
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Supabase query error:', error);
+      throw error;
+    }
+
+    console.log(`✅ Fetched ${data?.length || 0} flashcards from Supabase`);
     return data;
   },
 
