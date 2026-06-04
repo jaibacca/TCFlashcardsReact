@@ -127,12 +127,18 @@
 
 .summary-card .summary-label,
 .summary-label {
-  font-size: 13px;
+  font-size: 13px !important;
   text-transform: uppercase;
   opacity: 1;
   font-weight: 600;
   line-height: 1.4;
   margin-top: 4px;
+  color: white !important;
+}
+
+/* Maximum specificity override for summary labels */
+.summary-stats .summary-card .summary-label {
+  font-size: 13px !important;
   color: white !important;
 }
 
@@ -521,6 +527,13 @@
   .summary-card .summary-label,
   .summary-label {
     color: white !important;
+    font-size: 13px !important;
+  }
+
+  /* Maximum specificity for dark mode */
+  .summary-stats .summary-card .summary-label {
+    color: white !important;
+    font-size: 13px !important;
   }
 
   .summary-value {
@@ -631,3 +644,4 @@
 .cards-table-container::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
