@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
+import { syncToCloud } from '../services/progressSync';
 
 const AuthContext = createContext({});
 
@@ -23,13 +24,148 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const newUser = session?.user ?? null;
+      const wasAnonymous = !user;
+      const nowAuthenticated = !!newUser;
+
+      setUser(newUser);
       setLoading(false);
+
+      // Auto-migrate local data ONLY for brand new users (first sign-in ever)
+      if (wasAnonymous && nowAuthenticated && event === 'SIGNED_IN' && newUser) {
+        // Check if user already has cloud data - if they do, DON'T migrate
+        const hasExistingData = await checkUserHasCloudData(newUser.id);
+
+        if (!hasExistingData) {
+          console.log('🔄 New user detected - migrating local progress to cloud...');
+          await migrateLocalProgressToCloud(newUser.id);
+        } else {
+          console.log('ℹ️ Existing user signed in - loading cloud data, skipping migration');
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [user]);
+
+  // Check if user already has any cloud data
+  const checkUserHasCloudData = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('card_key')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (error) {
+        console.error('Error checking cloud data:', error);
+        return true; // Assume they have data to be safe
+      }
+
+      return data && data.length > 0;
+    } catch (error) {
+      console.error('Error checking cloud data:', error);
+      return true; // Assume they have data to be safe
+    }
+  };
+
+  // Function to migrate local storage data to cloud
+  const migrateLocalProgressToCloud = async (userId) => {
+    try {
+      // Get all local data
+      const reviewData = localStorage.getItem('tcFlashcardsReviewData');
+      const statsData = localStorage.getItem('tcFlashcardsStats');
+      const chapterProgress = localStorage.getItem('tcFlashcardsChapterProgress');
+
+      if (!reviewData && !statsData && !chapterProgress) {
+        console.log('ℹ️ No local data to migrate');
+        return;
+      }
+
+      let migratedCount = 0;
+
+      // Migrate review data (Spaced Repetition)
+      if (reviewData) {
+        const parsed = JSON.parse(reviewData);
+        if (Object.keys(parsed).length > 0) {
+          await syncToCloud(userId, parsed);
+          migratedCount += Object.keys(parsed).length;
+          console.log(`✅ Migrated ${Object.keys(parsed).length} spaced repetition cards`);
+        }
+      }
+
+      // Migrate stats data
+      if (statsData) {
+        const parsed = JSON.parse(statsData);
+        const cardHistory = parsed.cardHistory || {};
+
+        // Convert stats format to review data format for syncing
+        const statsAsReviewData = {};
+        Object.entries(cardHistory).forEach(([key, history]) => {
+          statsAsReviewData[key] = {
+            attempts: history.attempts || 0,
+            correctCount: history.correctCount || 0,
+            lastReviewed: history.lastReviewed || null,
+            interval: 1,
+            easeFactor: 2.5,
+            nextReview: new Date().toISOString(),
+          };
+        });
+
+        if (Object.keys(statsAsReviewData).length > 0) {
+          await syncToCloud(userId, statsAsReviewData);
+          migratedCount += Object.keys(statsAsReviewData).length;
+          console.log(`✅ Migrated ${Object.keys(statsAsReviewData).length} drill statistics`);
+        }
+      }
+
+      // Migrate chapter progress
+      if (chapterProgress) {
+        const parsed = JSON.parse(chapterProgress);
+        const chapterReviewData = {};
+
+        Object.entries(parsed).forEach(([key, data]) => {
+          chapterReviewData[key] = {
+            lastReviewed: data.lastCompleted || new Date().toISOString(),
+            interval: 1,
+            easeFactor: 2.5,
+            nextReview: data.lastCompleted || new Date().toISOString(),
+            attempts: data.timesCompleted || 0,
+            correctCount: Math.round((data.timesCompleted || 0) * (data.averageAccuracy || 0) / 100),
+          };
+        });
+
+        if (Object.keys(chapterReviewData).length > 0) {
+          await syncToCloud(userId, chapterReviewData);
+          migratedCount += Object.keys(chapterReviewData).length;
+          console.log(`✅ Migrated ${Object.keys(chapterReviewData).length} chapter progress records`);
+        }
+      }
+
+      if (migratedCount > 0) {
+        console.log(`🎉 Successfully migrated ${migratedCount} total records to cloud`);
+
+        // Emit event for toast notification
+        window.dispatchEvent(new CustomEvent('migrationComplete', {
+          detail: {
+            message: `Successfully synced ${migratedCount} records to your account! Your progress is now saved across all devices.`
+          }
+        }));
+
+        // Optional: Clear local storage after successful migration
+        // Uncomment if you want to remove local data after migration
+        // localStorage.removeItem('tcFlashcardsReviewData');
+        // localStorage.removeItem('tcFlashcardsStats');
+        // localStorage.removeItem('tcFlashcardsChapterProgress');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to migrate local progress:', error);
+      // Don't throw - we don't want to break the auth flow
+      // User data is still in localStorage as backup
+    }
+  };
 
   const signInWithEmail = async (email) => {
     try {

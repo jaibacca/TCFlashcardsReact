@@ -6,6 +6,7 @@ import { flashcardsApi } from './services/api'
 import DataSelector from './components/DataSelector'
 import Statistics from './components/Statistics'
 import Auth from './components/Auth'
+import MigrationToast from './components/MigrationToast'
 import SpacedRepetitionDrill from './components/SpacedRepetitionDrill'
 import ChapterProgressionDrill from './components/ChapterProgressionDrill'
 import HanziToPinyinDrill from './components/HanziToPinyinDrill'
@@ -270,6 +271,7 @@ function App() {
         <p>Jaibock Lee © {new Date().getFullYear()}</p>
       </footer>
 
+      <MigrationToast />
       <Analytics />
     </div>
   )
